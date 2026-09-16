@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,7 +7,12 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <!--权限设置卡片-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/margin_medium">
+
+        <!--权限设置卡片-->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/permissionCard"
         android:layout_width="0dp"
@@ -435,6 +440,7 @@
 
                 <!--常用后退时间快捷选择-->
                 <LinearLayout
+                    android:id="@+id/tbQuickSelectRow"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/margin_small"
@@ -471,6 +477,59 @@
                         android:text="@string/tb_quick_21"
                         android:textColor="@color/toggle_btn_text"
                         app:backgroundTint="@color/toggle_btn_bg" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/tbQuick31Button"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/tb_quick_31"
+                        android:textColor="@color/toggle_btn_text"
+                        app:backgroundTint="@color/toggle_btn_bg" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/tbQuick91Button"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/tb_quick_91"
+                        android:textColor="@color/toggle_btn_text"
+                        app:backgroundTint="@color/toggle_btn_bg" />
+                </LinearLayout>
+
+                <!--音效/震动提示勾选（仅"自动后退"勾选时显示）-->
+                <LinearLayout
+                    android:id="@+id/tbPromptRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/tbSoundCheckbox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/tb_sound_prompt"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body"
+                        app:buttonTint="@color/primary" />
+
+                    <CheckBox
+                        android:id="@+id/tbVibrateCheckbox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/tb_vibrate_prompt"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body"
+                        app:buttonTint="@color/primary" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -507,4 +566,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/startButton" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

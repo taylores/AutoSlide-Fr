@@ -12,7 +12,10 @@ import android.graphics.Path
 import android.graphics.PointF
 import android.media.MediaPlayer
 import android.os.Handler
+import android.os.Build
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.content.ContextCompat
@@ -22,6 +25,8 @@ import com.ltx.DEFAULT_PAUSE_TIME
 import com.ltx.DEFAULT_SPEED
 import com.ltx.DEFAULT_TB_AUTO_BACK
 import com.ltx.DEFAULT_TB_BACK_TIME
+import com.ltx.DEFAULT_TB_SOUND
+import com.ltx.DEFAULT_TB_VIBRATE
 import com.ltx.R
 import com.ltx.DIRECTION_DOWN
 import com.ltx.DIRECTION_LEFT
@@ -65,6 +70,8 @@ class AutoSlideService : AccessibilityService() {
     private var isGestureActive = false
     private var tbAutoBack = DEFAULT_TB_AUTO_BACK
     private var tbBackTime = DEFAULT_TB_BACK_TIME
+    private var tbSound = DEFAULT_TB_SOUND
+    private var tbVibrate = DEFAULT_TB_VIBRATE
 
     /* 自动滑动主循环 */
     private val slideRunnable = Runnable { runSlide() }
@@ -74,7 +81,8 @@ class AutoSlideService : AccessibilityService() {
         if (!isRunning) {
             return@Runnable
         }
-        playAlertSound()
+        if (tbSound) playAlertSound()
+        if (tbVibrate) vibrateDevice()
         performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
         forceStop()
     }
@@ -168,6 +176,8 @@ class AutoSlideService : AccessibilityService() {
         maxPauseTime = config.maxPauseTime.coerceAtLeast(1)
         tbAutoBack = config.tbAutoBack
         tbBackTime = config.tbBackTime.coerceAtLeast(1)
+        tbSound = config.tbSound
+        tbVibrate = config.tbVibrate
     }
 
     /**
@@ -271,12 +281,26 @@ class AutoSlideService : AccessibilityService() {
         SlideEventHub.sendEvent(SlideEvent.ForceStop)
     }
 
-    /* 播放提示音（tb模式定时后退提醒） */
+    /* 播放提示音（tb模式定时后退提醒，需勾选"音效提示"） */
     private fun playAlertSound() {
         runCatching {
             MediaPlayer.create(applicationContext, R.raw.open_deng)?.apply {
                 setOnCompletionListener { release() }
                 start()
+            }
+        }
+    }
+
+    /* 震动提示（tb模式定时后退提醒，需勾选"震动提示"） */
+    @SuppressLint("MissingPermission")
+    private fun vibrateDevice() {
+        runCatching {
+            val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(300)
             }
         }
     }

@@ -27,8 +27,12 @@ const val PAUSE_MODE_RANDOM = 2
 // tb模式（定时后退）配置键名与默认值
 const val KEY_TB_AUTO_BACK = "tbAutoBack"
 const val KEY_TB_BACK_TIME = "tbBackTime"
+const val KEY_TB_SOUND = "tbSound"
+const val KEY_TB_VIBRATE = "tbVibrate"
 const val DEFAULT_TB_AUTO_BACK = true
 const val DEFAULT_TB_BACK_TIME = 15
+const val DEFAULT_TB_SOUND = true
+const val DEFAULT_TB_VIBRATE = false
 
 /* 滑动配置数据类 */
 data class SlideConfig(
@@ -38,7 +42,9 @@ data class SlideConfig(
     val minPauseTime: Int = DEFAULT_MIN_PAUSE_TIME,
     val maxPauseTime: Int = DEFAULT_MAX_PAUSE_TIME,
     val tbAutoBack: Boolean = DEFAULT_TB_AUTO_BACK,
-    val tbBackTime: Int = DEFAULT_TB_BACK_TIME
+    val tbBackTime: Int = DEFAULT_TB_BACK_TIME,
+    val tbSound: Boolean = DEFAULT_TB_SOUND,
+    val tbVibrate: Boolean = DEFAULT_TB_VIBRATE
 )
 
 // 滑动方向

@@ -62,6 +62,10 @@
     <string name="tb_quick_select">常用：</string>
     <string name="tb_quick_16">16秒</string>
     <string name="tb_quick_21">21秒</string>
+    <string name="tb_quick_31">31秒</string>
+    <string name="tb_quick_91">91秒</string>
+    <string name="tb_sound_prompt">音效提示</string>
+    <string name="tb_vibrate_prompt">震动提示</string>
     <string name="random_pause_time_range">停顿时间范围（秒）：</string>
     <string name="pause_time_range_format">%1$d - %2$d</string>
     <string name="setting_slide_speed">滑动速度：</string>

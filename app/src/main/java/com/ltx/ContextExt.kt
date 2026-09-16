@@ -89,7 +89,9 @@ fun Context.getSlideConfig(): SlideConfig {
         minPauseTime = prefs.getInt(KEY_MIN_PAUSE_TIME, DEFAULT_MIN_PAUSE_TIME).coerceAtLeast(1),
         maxPauseTime = prefs.getInt(KEY_MAX_PAUSE_TIME, DEFAULT_MAX_PAUSE_TIME).coerceAtLeast(1),
         tbAutoBack = prefs.getBoolean(KEY_TB_AUTO_BACK, DEFAULT_TB_AUTO_BACK),
-        tbBackTime = prefs.getInt(KEY_TB_BACK_TIME, DEFAULT_TB_BACK_TIME).coerceAtLeast(1)
+        tbBackTime = prefs.getInt(KEY_TB_BACK_TIME, DEFAULT_TB_BACK_TIME).coerceAtLeast(1),
+        tbSound = prefs.getBoolean(KEY_TB_SOUND, DEFAULT_TB_SOUND),
+        tbVibrate = prefs.getBoolean(KEY_TB_VIBRATE, DEFAULT_TB_VIBRATE)
     )
 }
 

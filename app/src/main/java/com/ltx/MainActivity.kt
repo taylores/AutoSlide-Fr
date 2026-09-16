@@ -230,6 +230,12 @@ class MainActivity : AppCompatActivity() {
         binding.tbBackTimeValueText.text = tbBackTime.toString()
         binding.tbBackTimeRow.isVisible = tbAutoBack
         binding.tbBackTimeSlider.isVisible = tbAutoBack
+        binding.tbQuickSelectRow.isVisible = tbAutoBack
+        binding.tbPromptRow.isVisible = tbAutoBack
+        val tbSound = preferences.getBoolean(KEY_TB_SOUND, DEFAULT_TB_SOUND)
+        val tbVibrate = preferences.getBoolean(KEY_TB_VIBRATE, DEFAULT_TB_VIBRATE)
+        binding.tbSoundCheckbox.isChecked = tbSound
+        binding.tbVibrateCheckbox.isChecked = tbVibrate
         updatePauseTimeVisibility(config.pauseMode)
     }
 
@@ -341,11 +347,24 @@ class MainActivity : AppCompatActivity() {
             preferences.edit { putBoolean(KEY_TB_AUTO_BACK, isChecked) }
             binding.tbBackTimeRow.isVisible = isChecked
             binding.tbBackTimeSlider.isVisible = isChecked
+            binding.tbQuickSelectRow.isVisible = isChecked
+            binding.tbPromptRow.isVisible = isChecked
             syncPauseConfigToService()
         }
-        // 常用后退时间快捷选择（16秒 / 21秒）
+        // 常用后退时间快捷选择（16秒 / 21秒 / 31秒 / 91秒）
         binding.tbQuick16Button.setOnClickListener { setTbBackTime(16) }
         binding.tbQuick21Button.setOnClickListener { setTbBackTime(21) }
+        binding.tbQuick31Button.setOnClickListener { setTbBackTime(31) }
+        binding.tbQuick91Button.setOnClickListener { setTbBackTime(91) }
+        // 音效提示 / 震动提示 勾选（仅影响自动后退触发时的提示方式）
+        binding.tbSoundCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            preferences.edit { putBoolean(KEY_TB_SOUND, isChecked) }
+            syncPauseConfigToService()
+        }
+        binding.tbVibrateCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            preferences.edit { putBoolean(KEY_TB_VIBRATE, isChecked) }
+            syncPauseConfigToService()
+        }
         binding.tbBackTimeValueText.setOnClickListener {
             if (!binding.tbAutoBackCheckbox.isChecked) return@setOnClickListener
             showCustomTbBackTimeDialog()
@@ -367,7 +386,12 @@ class MainActivity : AppCompatActivity() {
 
     /* 设置自动后退时间（快捷按钮 / 自定义统一入口） */
     private fun setTbBackTime(seconds: Int) {
-        binding.tbBackTimeSlider.value = seconds.toFloat()
+        val slider = binding.tbBackTimeSlider
+        // 容错：点击的秒数若超出滑动条当前最大值，先扩容 valueTo，避免 value > valueTo 抛异常闪退
+        if (slider.valueTo < seconds) {
+            slider.valueTo = maxOf(60f, seconds.toFloat())
+        }
+        slider.value = seconds.toFloat()
         binding.tbBackTimeValueText.text = seconds.toString()
         preferences.edit { putInt(KEY_TB_BACK_TIME, seconds) }
         syncPauseConfigToService()
