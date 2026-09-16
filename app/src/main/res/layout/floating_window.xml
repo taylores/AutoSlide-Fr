@@ -77,19 +77,39 @@
                 tools:ignore="ClassNameCheck" />
         </LinearLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/floating_down_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="3dp"
-            android:contentDescription="@string/desc_slide_down"
-            android:src="@drawable/ic_floating_arrow_down"
-            app:backgroundTint="@color/floating_btn_bg"
-            app:elevation="6dp"
-            app:fabSize="mini"
-            app:tint="@color/floating_btn_icon"
-            tools:ignore="ClassNameCheck" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/floating_down_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_margin="3dp"
+                android:contentDescription="@string/desc_slide_down"
+                android:src="@drawable/ic_floating_arrow_down"
+                app:backgroundTint="@color/floating_btn_bg"
+                app:elevation="6dp"
+                app:fabSize="mini"
+                app:tint="@color/floating_btn_icon"
+                tools:ignore="ClassNameCheck" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/floating_up_down_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@id/floating_down_button"
+                android:layout_centerVertical="true"
+                android:layout_margin="3dp"
+                android:contentDescription="@string/desc_slide_up_down"
+                android:src="@drawable/ic_floating_arrow_up_down"
+                app:backgroundTint="@color/floating_btn_bg"
+                app:elevation="6dp"
+                app:fabSize="mini"
+                app:tint="@color/floating_btn_icon"
+                tools:ignore="ClassNameCheck" />
+        </RelativeLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floating_close_button"
@@ -107,19 +127,49 @@
 
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floating_expand_button"
+    <FrameLayout
+        android:id="@+id/floating_expand_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="3dp"
-        android:contentDescription="@string/desc_expand"
-        android:src="@drawable/ic_floating_expand"
-        android:visibility="gone"
-        app:backgroundTint="@color/floating_btn_bg"
-        app:elevation="6dp"
-        app:fabSize="mini"
-        app:tint="@color/floating_btn_icon"
-        tools:ignore="ClassNameCheck" />
+        android:visibility="gone">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floating_expand_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="3dp"
+            android:clickable="false"
+            android:contentDescription="@string/desc_expand"
+            android:src="@drawable/ic_floating_expand"
+            app:backgroundTint="@color/floating_btn_bg"
+            app:elevation="6dp"
+            app:fabSize="mini"
+            app:tint="@color/floating_btn_icon"
+            tools:ignore="ClassNameCheck" />
+
+        <!--自动后退倒计时（叠在收纳圆角小方框底部内侧，勾选"自动后退"且滑动中才显示）-->
+        <!-- android:translationY="18dp" 表示设置视图在 Y 轴方向的平移量（垂直偏移），正值向下移动，负值向上移动-->
+        <TextView
+            android:id="@+id/floating_tb_countdown_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:clickable="false"
+            android:elevation="8dp"
+            android:translationY="18dp" 
+            android:includeFontPadding="false"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:visibility="gone"
+            tools:ignore="SmallSp"
+            tools:text="16s" />
+    </FrameLayout>
 
 </com.ltx.service.DraggableLinearLayout>

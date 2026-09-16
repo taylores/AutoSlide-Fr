@@ -28,6 +28,7 @@
     <string name="desc_slide_down">向下滑动</string>
     <string name="desc_slide_left">向左滑动</string>
     <string name="desc_slide_right">向右滑动</string>
+    <string name="desc_slide_up_down">上下滑动</string>
     <string name="desc_settings">设置</string>
     <string name="desc_close">关闭</string>
     <string name="desc_expand">展开</string>
@@ -54,6 +55,13 @@
     <string name="pause_mode_none">不停顿</string>
     <string name="pause_mode_fixed">固定时间</string>
     <string name="pause_mode_random">随机时间</string>
+    <string name="pause_mode_tb">tb</string>
+    <string name="tb_auto_back">自动后退</string>
+    <string name="tb_back_time">后退时间（秒）：</string>
+    <string name="custom_tb_back_time">自定义后退时间（秒）</string>
+    <string name="tb_quick_select">常用：</string>
+    <string name="tb_quick_16">16秒</string>
+    <string name="tb_quick_21">21秒</string>
     <string name="random_pause_time_range">停顿时间范围（秒）：</string>
     <string name="pause_time_range_format">%1$d - %2$d</string>
     <string name="setting_slide_speed">滑动速度：</string>

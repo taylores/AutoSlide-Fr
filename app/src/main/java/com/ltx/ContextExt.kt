@@ -77,10 +77,19 @@ fun Context.getSlideConfig(): SlideConfig {
     val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     return SlideConfig(
         speed = prefs.getInt(KEY_SPEED, DEFAULT_SPEED).coerceIn(1, 100),
-        pauseMode = prefs.getInt(KEY_PAUSE_MODE, PAUSE_MODE_NONE),
+        pauseMode = run {
+            val rawMode = prefs.getInt(KEY_PAUSE_MODE, PAUSE_MODE_NONE)
+            if (rawMode == PAUSE_MODE_FIXED || rawMode == PAUSE_MODE_RANDOM || rawMode == PAUSE_MODE_NONE) {
+                rawMode
+            } else {
+                PAUSE_MODE_NONE
+            }
+        },
         pauseTime = prefs.getInt(KEY_PAUSE_TIME, DEFAULT_PAUSE_TIME).coerceAtLeast(1),
         minPauseTime = prefs.getInt(KEY_MIN_PAUSE_TIME, DEFAULT_MIN_PAUSE_TIME).coerceAtLeast(1),
-        maxPauseTime = prefs.getInt(KEY_MAX_PAUSE_TIME, DEFAULT_MAX_PAUSE_TIME).coerceAtLeast(1)
+        maxPauseTime = prefs.getInt(KEY_MAX_PAUSE_TIME, DEFAULT_MAX_PAUSE_TIME).coerceAtLeast(1),
+        tbAutoBack = prefs.getBoolean(KEY_TB_AUTO_BACK, DEFAULT_TB_AUTO_BACK),
+        tbBackTime = prefs.getInt(KEY_TB_BACK_TIME, DEFAULT_TB_BACK_TIME).coerceAtLeast(1)
     )
 }
 

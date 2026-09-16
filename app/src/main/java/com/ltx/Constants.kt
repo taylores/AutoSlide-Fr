@@ -19,10 +19,16 @@ const val DEFAULT_MIN_PAUSE_TIME = 1
 const val DEFAULT_MAX_PAUSE_TIME = 3
 const val DEFAULT_FLOATING_TRANSPARENCY = 40
 
-// 停顿模式
+// 停顿模式（"自动后退"不再作为独立模式，而是附加功能，见 KEY_TB_*）
 const val PAUSE_MODE_NONE = 0
 const val PAUSE_MODE_FIXED = 1
 const val PAUSE_MODE_RANDOM = 2
+
+// tb模式（定时后退）配置键名与默认值
+const val KEY_TB_AUTO_BACK = "tbAutoBack"
+const val KEY_TB_BACK_TIME = "tbBackTime"
+const val DEFAULT_TB_AUTO_BACK = true
+const val DEFAULT_TB_BACK_TIME = 15
 
 /* 滑动配置数据类 */
 data class SlideConfig(
@@ -30,7 +36,9 @@ data class SlideConfig(
     val pauseMode: Int = PAUSE_MODE_NONE,
     val pauseTime: Int = DEFAULT_PAUSE_TIME,
     val minPauseTime: Int = DEFAULT_MIN_PAUSE_TIME,
-    val maxPauseTime: Int = DEFAULT_MAX_PAUSE_TIME
+    val maxPauseTime: Int = DEFAULT_MAX_PAUSE_TIME,
+    val tbAutoBack: Boolean = DEFAULT_TB_AUTO_BACK,
+    val tbBackTime: Int = DEFAULT_TB_BACK_TIME
 )
 
 // 滑动方向
@@ -38,6 +46,8 @@ const val DIRECTION_UP = "up"
 const val DIRECTION_DOWN = "down"
 const val DIRECTION_LEFT = "left"
 const val DIRECTION_RIGHT = "right"
+// 上下组合滑动（交替向上、向下）
+const val DIRECTION_UP_DOWN = "updown"
 
 // 自定义轨迹
 const val KEY_CUSTOM_TRAJECTORY_UP = "customTrajectory_up"

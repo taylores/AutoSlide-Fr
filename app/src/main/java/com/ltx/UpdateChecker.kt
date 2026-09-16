@@ -49,7 +49,7 @@ object UpdateChecker {
     )
 
     private const val UPDATE_INFO_URL =
-        "https://raw.githubusercontent.com/tianxing-ovo/AutoSlide/master/update.json"
+        "https://raw.githubusercontent.com/taylores/AutoSlide-Fr/master/update.json"
 
     // 用于加速下载的GitHub代理前缀
     private const val GITHUB_PROXY_PREFIX = "https://ghproxy.net/"

@@ -153,6 +153,7 @@ class MainActivity : AppCompatActivity() {
         preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         restoreSettings()
         setupPauseControls()
+        setupTbControls()
         setupSpeedControl()
         setupTransparencyControl()
         binding.accessibilityServicePermissionSwitch.setOnCheckedChangeListener(accessibilitySwitchListener)
@@ -219,6 +220,16 @@ class MainActivity : AppCompatActivity() {
         binding.randomPauseTimeSlider.values = listOf(config.minPauseTime.toFloat(), config.maxPauseTime.toFloat()).sorted()
         binding.pauseTimeSlider.setCustomThumbDrawable(R.drawable.slider_thumb_circular)
         binding.randomPauseTimeSlider.setCustomThumbDrawable(R.drawable.slider_thumb_circular)
+        // 恢复tb模式配置
+        val tbAutoBack = preferences.getBoolean(KEY_TB_AUTO_BACK, DEFAULT_TB_AUTO_BACK)
+        binding.tbAutoBackCheckbox.isChecked = tbAutoBack
+        val tbBackTime = preferences.getInt(KEY_TB_BACK_TIME, DEFAULT_TB_BACK_TIME)
+        binding.tbBackTimeSlider.valueTo = maxOf(60, tbBackTime).toFloat()
+        binding.tbBackTimeSlider.value = tbBackTime.toFloat()
+        binding.tbBackTimeSlider.setCustomThumbDrawable(R.drawable.slider_thumb_circular)
+        binding.tbBackTimeValueText.text = tbBackTime.toString()
+        binding.tbBackTimeRow.isVisible = tbAutoBack
+        binding.tbBackTimeSlider.isVisible = tbAutoBack
         updatePauseTimeVisibility(config.pauseMode)
     }
 
@@ -317,6 +328,77 @@ class MainActivity : AppCompatActivity() {
                     binding.pauseTimeSlider.value = value.toFloat()
                     binding.pauseTimeValueText.text = value.toString()
                     // 更新停顿配置
+                    syncPauseConfigToService()
+                } else {
+                    Toast.makeText(this, R.string.invalid_input_number, Toast.LENGTH_SHORT).show()
+                }
+            }.setNegativeButton(R.string.cancel, null).show()
+    }
+
+    /* 绑定tb模式（定时后退）控件事件并持久化用户设置 */
+    private fun setupTbControls() {
+        binding.tbAutoBackCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            preferences.edit { putBoolean(KEY_TB_AUTO_BACK, isChecked) }
+            binding.tbBackTimeRow.isVisible = isChecked
+            binding.tbBackTimeSlider.isVisible = isChecked
+            syncPauseConfigToService()
+        }
+        // 常用后退时间快捷选择（16秒 / 21秒）
+        binding.tbQuick16Button.setOnClickListener { setTbBackTime(16) }
+        binding.tbQuick21Button.setOnClickListener { setTbBackTime(21) }
+        binding.tbBackTimeValueText.setOnClickListener {
+            if (!binding.tbAutoBackCheckbox.isChecked) return@setOnClickListener
+            showCustomTbBackTimeDialog()
+        }
+        binding.tbBackTimeSlider.addOnChangeListener { _, value, fromUser ->
+            val progress = value.toInt()
+            binding.tbBackTimeValueText.text = progress.toString()
+            if (fromUser) {
+                preferences.edit { putInt(KEY_TB_BACK_TIME, progress) }
+            }
+        }
+        binding.tbBackTimeSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) = Unit
+            override fun onStopTrackingTouch(slider: Slider) {
+                syncPauseConfigToService()
+            }
+        })
+    }
+
+    /* 设置自动后退时间（快捷按钮 / 自定义统一入口） */
+    private fun setTbBackTime(seconds: Int) {
+        binding.tbBackTimeSlider.value = seconds.toFloat()
+        binding.tbBackTimeValueText.text = seconds.toString()
+        preferences.edit { putInt(KEY_TB_BACK_TIME, seconds) }
+        syncPauseConfigToService()
+    }
+
+    /* 显示自定义后退时间输入对话框 */
+    @SuppressLint("SetTextI18n")
+    private fun showCustomTbBackTimeDialog() {
+        val textInputLayout = TextInputLayout(this).apply {
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            hint = getString(R.string.custom_tb_back_time)
+        }
+        val editText = TextInputEditText(textInputLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setText(binding.tbBackTimeValueText.text)
+            setSelection(text?.length ?: 0)
+        }
+        textInputLayout.addView(editText)
+        val padding = (24 * resources.displayMetrics.density).toInt()
+        val container = FrameLayout(this).apply {
+            setPadding(padding, padding / 2, padding, padding / 3)
+            addView(textInputLayout)
+        }
+        AlertDialog.Builder(this).setTitle(R.string.custom_tb_back_time).setView(container)
+            .setPositiveButton(AndroidR.string.ok) { _, _ ->
+                val value = editText.text.toString().toIntOrNull()
+                if (value != null && value > 0) {
+                    preferences.edit { putInt(KEY_TB_BACK_TIME, value) }
+                    binding.tbBackTimeSlider.valueTo = maxOf(60, value).toFloat()
+                    binding.tbBackTimeSlider.value = value.toFloat()
+                    binding.tbBackTimeValueText.text = value.toString()
                     syncPauseConfigToService()
                 } else {
                     Toast.makeText(this, R.string.invalid_input_number, Toast.LENGTH_SHORT).show()
@@ -723,7 +805,9 @@ class MainActivity : AppCompatActivity() {
      */
     @SuppressLint("SetTextI18n")
     private fun updatePauseTimeVisibility(pauseMode: Int) {
+        // 停顿时间面板仅在"固定时间/随机时间"下显示；"自动后退"为独立附加功能，始终显示
         binding.pauseTimeContainer.isVisible = pauseMode != PAUSE_MODE_NONE
+        binding.tbConfigContainer.isVisible = true
         if (pauseMode == PAUSE_MODE_FIXED) {
             binding.pauseTimeLabel.setText(R.string.pause_time)
             binding.pauseTimeSlider.isVisible = true

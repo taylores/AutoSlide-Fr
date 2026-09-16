@@ -364,6 +364,116 @@
                         android:visibility="gone" />
                 </FrameLayout>
             </LinearLayout>
+
+            <!--自动后退附加功能（独立于三种模式，勾选后按设置的后退时间执行后退）-->
+            <LinearLayout
+                android:id="@+id/tbConfigContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_small"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/tbAutoBackCheckbox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/tb_auto_back"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body"
+                        app:buttonTint="@color/primary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tbBackTimeRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tbBackTimeLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tb_back_time"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <TextView
+                        android:id="@+id/tbBackTimeValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:textColor="@color/primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold"
+                        tools:text="15" />
+                </LinearLayout>
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/tbBackTimeSlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:stepSize="1.0"
+                    android:valueFrom="1.0"
+                    android:valueTo="60.0"
+                    android:value="15.0"
+                    app:labelBehavior="gone"
+                    app:tickVisible="false"
+                    app:tickColor="@android:color/transparent"
+                    app:trackHeight="4dp"
+                    app:thumbColor="@color/primary"
+                    app:trackColorActive="@color/primary"
+                    app:trackColorInactive="@color/switch_track_unchecked" />
+
+                <!--常用后退时间快捷选择-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tb_quick_select"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/tbQuick16Button"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/tb_quick_16"
+                        android:textColor="@color/toggle_btn_text"
+                        app:backgroundTint="@color/toggle_btn_bg" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/tbQuick21Button"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:minWidth="0dp"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/tb_quick_21"
+                        android:textColor="@color/toggle_btn_text"
+                        app:backgroundTint="@color/toggle_btn_bg" />
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

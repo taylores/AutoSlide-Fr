@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Path
 import android.graphics.PointF
+import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
@@ -19,10 +20,14 @@ import com.ltx.DEFAULT_MAX_PAUSE_TIME
 import com.ltx.DEFAULT_MIN_PAUSE_TIME
 import com.ltx.DEFAULT_PAUSE_TIME
 import com.ltx.DEFAULT_SPEED
+import com.ltx.DEFAULT_TB_AUTO_BACK
+import com.ltx.DEFAULT_TB_BACK_TIME
+import com.ltx.R
 import com.ltx.DIRECTION_DOWN
 import com.ltx.DIRECTION_LEFT
 import com.ltx.DIRECTION_RIGHT
 import com.ltx.DIRECTION_UP
+import com.ltx.DIRECTION_UP_DOWN
 import com.ltx.PAUSE_MODE_FIXED
 import com.ltx.PAUSE_MODE_NONE
 import com.ltx.PAUSE_MODE_RANDOM
@@ -55,21 +60,41 @@ class AutoSlideService : AccessibilityService() {
     private var minPauseTime = DEFAULT_MIN_PAUSE_TIME
     private var maxPauseTime = DEFAULT_MAX_PAUSE_TIME
     private var currentDirection = DIRECTION_LEFT
+    private var upDownToggle = false
     private var isRunning = false
     private var isGestureActive = false
+    private var tbAutoBack = DEFAULT_TB_AUTO_BACK
+    private var tbBackTime = DEFAULT_TB_BACK_TIME
 
     /* 自动滑动主循环 */
     private val slideRunnable = Runnable { runSlide() }
+
+    /* 自动后退任务（附加功能，独立于滑动模式）：到点播放提示音并执行返回后停止滑动 */
+    private val tbAutoBackRunnable = Runnable {
+        if (!isRunning) {
+            return@Runnable
+        }
+        playAlertSound()
+        performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+        forceStop()
+    }
 
     /* 执行一次自动滑动 */
     private fun runSlide() {
         if (!isRunning) {
             return
         }
+        // 上下组合模式：每次滑动在"上/下"之间交替（首次为向下）
+        val effectiveDirection = if (currentDirection == DIRECTION_UP_DOWN) {
+            upDownToggle = !upDownToggle
+            if (upDownToggle) DIRECTION_DOWN else DIRECTION_UP
+        } else {
+            currentDirection
+        }
         // 计算手势持续时间
         val gestureDurationMillis = calculateGestureDurationMillis()
         // 执行滑动
-        performSlideByDirection(gestureDurationMillis)
+        performSlideByDirection(gestureDurationMillis, effectiveDirection)
     }
 
     /* 息屏时强制停止滑动 */
@@ -105,7 +130,7 @@ class AutoSlideService : AccessibilityService() {
      */
     fun setDirection(direction: String) {
         currentDirection = when (direction) {
-            DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT -> direction
+            DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT, DIRECTION_UP_DOWN -> direction
             else -> DIRECTION_LEFT
         }
     }
@@ -141,6 +166,8 @@ class AutoSlideService : AccessibilityService() {
         pauseTime = config.pauseTime.coerceAtLeast(1)
         minPauseTime = config.minPauseTime.coerceAtLeast(1)
         maxPauseTime = config.maxPauseTime.coerceAtLeast(1)
+        tbAutoBack = config.tbAutoBack
+        tbBackTime = config.tbBackTime.coerceAtLeast(1)
     }
 
     /**
@@ -156,6 +183,20 @@ class AutoSlideService : AccessibilityService() {
         // 移除当前滑动任务并重新调度新的停顿时间
         handler.removeCallbacks(slideRunnable)
         handler.postDelayed(slideRunnable, calculatePauseDelayMillis())
+        // 重新调度自动后退（运行时勾选/调整后退时间即时生效）
+        scheduleAutoBack()
+    }
+
+    /**
+     * 调度自动后退任务（独立于滑动模式，勾选"自动后退"即生效）
+     *
+     * @param currentGen 当前运行代数
+     */
+    private fun scheduleAutoBack(currentGen: Int = runGeneration) {
+        handler.removeCallbacks(tbAutoBackRunnable)
+        if (isRunning && currentGen == runGeneration && tbAutoBack) {
+            handler.postDelayed(tbAutoBackRunnable, tbBackTime.coerceAtLeast(1) * 1000L)
+        }
     }
 
    /**
@@ -196,6 +237,7 @@ class AutoSlideService : AccessibilityService() {
         isGestureActive = false
         runGeneration++
         handler.removeCallbacks(slideRunnable)
+        handler.removeCallbacks(tbAutoBackRunnable)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) = Unit
@@ -227,6 +269,16 @@ class AutoSlideService : AccessibilityService() {
     private fun forceStop() {
         stopSlide()
         SlideEventHub.sendEvent(SlideEvent.ForceStop)
+    }
+
+    /* 播放提示音（tb模式定时后退提醒） */
+    private fun playAlertSound() {
+        runCatching {
+            MediaPlayer.create(applicationContext, R.raw.open_deng)?.apply {
+                setOnCompletionListener { release() }
+                start()
+            }
+        }
     }
 
     /* 注册息屏广播 */
@@ -277,9 +329,12 @@ class AutoSlideService : AccessibilityService() {
     private fun startAutoSlide() {
         isRunning = true
         isGestureActive = false
+        upDownToggle = false
         runGeneration++
         val currentGen = runGeneration
         handler.removeCallbacks(slideRunnable)
+        // 安排自动后退（独立于滑动模式，从点击滑动时开始计时）
+        scheduleAutoBack(currentGen)
         // 延迟300ms执行第一次滑动(等待悬浮窗完成最小化动画)(防止悬浮窗拦截手势)
         handler.postDelayed({
             if (currentGen == runGeneration && isRunning) {
@@ -289,19 +344,20 @@ class AutoSlideService : AccessibilityService() {
     }
 
     /**
-     * 按当前方向执行一次滑动
+     * 按指定方向执行一次滑动
      *
      * @param durationMillis 手势持续时间(毫秒)
+     * @param direction 本次滑动方向（上下组合模式下由调用方决定具体上/下）
      */
-    private fun performSlideByDirection(durationMillis: Long) {
+    private fun performSlideByDirection(durationMillis: Long, direction: String = currentDirection) {
         // 读取自定义轨迹字符串
-        val trajectoryStr = getCustomTrajectory(currentDirection)
+        val trajectoryStr = getCustomTrajectory(direction)
         if (trajectoryStr != null) {
             // 分发自定义手势
             dispatchCustomGesture(trajectoryStr, durationMillis)
         } else {
             // 分发默认手势
-            val (startX, startY, endX, endY) = getSlideCoordinates(currentDirection)
+            val (startX, startY, endX, endY) = getSlideCoordinates(direction)
             dispatchDefaultGesture(startX, startY, endX, endY, durationMillis)
         }
     }

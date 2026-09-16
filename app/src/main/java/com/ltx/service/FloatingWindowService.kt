@@ -9,7 +9,10 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.graphics.PointF
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.widget.TextView
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -25,6 +28,7 @@ import com.ltx.DIRECTION_DOWN
 import com.ltx.DIRECTION_LEFT
 import com.ltx.DIRECTION_RIGHT
 import com.ltx.DIRECTION_UP
+import com.ltx.DIRECTION_UP_DOWN
 import com.ltx.KEY_FLOATING_TRANSPARENCY
 import com.ltx.MainActivity
 import com.ltx.PREFS_NAME
@@ -54,12 +58,30 @@ class FloatingWindowService : Service() {
     private lateinit var rootView: View
     private lateinit var controlPanel: View
     private lateinit var expandButton: View
+    private lateinit var tbCountdownText: TextView
     private var initialX = 0f
     private var initialY = 0f
     private var initialTouchX = 0f
     private var initialTouchY = 0f
     private var recordOverlayView: View? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    /* 自动后退倒计时（收纳小方块右下角显示，剩余秒数） */
+    private val tbCountdownHandler = Handler(Looper.getMainLooper())
+    private var tbCountdownRemaining = 0
+    private val tbCountdownRunnable = object : Runnable {
+        override fun run() {
+            if (tbCountdownRemaining > 0) {
+                tbCountdownRemaining--
+                updateTbCountdownText()
+                if (tbCountdownRemaining > 0) {
+                    tbCountdownHandler.postDelayed(this, 1000L)
+                } else {
+                    hideTbCountdown()
+                }
+            }
+        }
+    }
 
     /* 绑定服务 */
     override fun onBind(intent: Intent?): IBinder? = null
@@ -73,7 +95,8 @@ class FloatingWindowService : Service() {
         // 创建悬浮窗根视图
         rootView = createRootView()
         controlPanel = rootView.findViewById(R.id.control_panel)
-        expandButton = rootView.findViewById(R.id.floating_expand_button)
+        expandButton = rootView.findViewById(R.id.floating_expand_container)
+        tbCountdownText = rootView.findViewById(R.id.floating_tb_countdown_text)
         layoutParams = createLayoutParams()
         updatePanelTransparency()
         // 注册拖拽事件处理
@@ -98,7 +121,10 @@ class FloatingWindowService : Service() {
             SlideEventHub.eventFlow.collect { event ->
                 if (!::rootView.isInitialized) return@collect
                 when (event) {
-                    is SlideEvent.ForceStop -> expand(stopSlide = false)
+                    is SlideEvent.ForceStop -> {
+                        hideTbCountdown()
+                        expand(stopSlide = false)
+                    }
                     is SlideEvent.CustomTrajectoryCleared -> updateDirectionButtonIndicators()
                     is SlideEvent.FloatingTransparencyChanged -> updatePanelTransparency(event.transparency)
                 }
@@ -111,6 +137,7 @@ class FloatingWindowService : Service() {
         isServiceRunning = false
         AutoSlideTileService.requestUpdate(this)
         serviceScope.cancel()
+        hideTbCountdown()
         removeRecordView()
         super.onDestroy()
         runCatching { windowManager.removeView(rootView) }
@@ -321,6 +348,7 @@ class FloatingWindowService : Service() {
         DIRECTION_DOWN -> getString(R.string.desc_slide_down)
         DIRECTION_LEFT -> getString(R.string.desc_slide_left)
         DIRECTION_RIGHT -> getString(R.string.desc_slide_right)
+        DIRECTION_UP_DOWN -> getString(R.string.desc_slide_up_down)
         else -> direction
     }
 
@@ -432,6 +460,8 @@ class FloatingWindowService : Service() {
         }
         // 方向按钮⌈长按⌋事件绑定
         button.setOnLongClickListener {
+            // 上下组合模式不支持自定义轨迹，长按不触发录制
+            if (direction == DIRECTION_UP_DOWN) return@setOnLongClickListener true
             if (hasCustomTrajectory(direction)) {
                 showTrajectoryManageDialog(direction)
             } else {
@@ -472,13 +502,41 @@ class FloatingWindowService : Service() {
      * @param stopSlide 是否停止当前自动滑动
      */
     private fun expand(stopSlide: Boolean = true) {
+        hideTbCountdown()
         setExpanded(true, stopSlide)
     }
 
     /* 启动自动滑动服务 */
     private fun startSlide() {
+        val config = getSlideConfig()
+        if (config.tbAutoBack) {
+            startTbCountdown(config.tbBackTime)
+        } else {
+            hideTbCountdown()
+        }
         minimize()
-        AutoSlideService.getInstance()?.startSlideWithConfig(getSlideConfig())
+        AutoSlideService.getInstance()?.startSlideWithConfig(config)
+    }
+
+    /* 启动自动后退倒计时（收纳小方块右下角显示剩余秒数） */
+    private fun startTbCountdown(seconds: Int) {
+        tbCountdownHandler.removeCallbacks(tbCountdownRunnable)
+        tbCountdownRemaining = seconds.coerceAtLeast(1)
+        updateTbCountdownText()
+        tbCountdownHandler.postDelayed(tbCountdownRunnable, 1000L)
+    }
+
+    /* 刷新倒计时文本 */
+    private fun updateTbCountdownText() {
+        tbCountdownText.text = "${tbCountdownRemaining}s"
+        tbCountdownText.visibility = View.VISIBLE
+    }
+
+    /* 隐藏并清除自动后退倒计时 */
+    private fun hideTbCountdown() {
+        tbCountdownHandler.removeCallbacks(tbCountdownRunnable)
+        tbCountdownRemaining = 0
+        tbCountdownText.visibility = View.GONE
     }
 
     /* 返回主界面 */
@@ -521,7 +579,8 @@ class FloatingWindowService : Service() {
             R.id.floating_up_button to DIRECTION_UP,
             R.id.floating_down_button to DIRECTION_DOWN,
             R.id.floating_left_button to DIRECTION_LEFT,
-            R.id.floating_right_button to DIRECTION_RIGHT
+            R.id.floating_right_button to DIRECTION_RIGHT,
+            R.id.floating_up_down_button to DIRECTION_UP_DOWN
         )
 
         /**
