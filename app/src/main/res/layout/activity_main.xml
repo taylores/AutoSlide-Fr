@@ -34,13 +34,43 @@
             android:orientation="vertical"
             android:padding="@dimen/margin_medium">
 
-            <TextView
+            <!--分类标题栏：点击展开/收纳（右侧箭头）-->
+            <LinearLayout
+                android:id="@+id/permissionHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/title_required_permission"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_size_subtitle"
-                android:textStyle="bold" />
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/title_required_permission"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_subtitle"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/permissionChevron"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:padding="4dp"
+                    app:srcCompat="@drawable/ic_chevron_down"
+                    app:tint="@color/text_secondary" />
+            </LinearLayout>
+
+            <!--分类参数容器（展开/收纳目标）-->
+            <LinearLayout
+                android:id="@+id/permissionParamsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_small"
+                android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -89,6 +119,7 @@
                     app:thumbTint="@color/switch_thumb_color"
                     app:trackTint="@color/switch_track_color" />
             </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -112,13 +143,43 @@
             android:orientation="vertical"
             android:padding="@dimen/margin_medium">
 
-            <TextView
+            <!--分类标题栏：点击展开/收纳（右侧箭头）-->
+            <LinearLayout
+                android:id="@+id/preferenceHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/title_preference_settings"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_size_subtitle"
-                android:textStyle="bold" />
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/title_preference_settings"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_subtitle"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/preferenceChevron"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:padding="4dp"
+                    app:srcCompat="@drawable/ic_chevron_down"
+                    app:tint="@color/text_secondary" />
+            </LinearLayout>
+
+            <!--分类参数容器（展开/收纳目标）-->
+            <LinearLayout
+                android:id="@+id/preferenceParamsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_small"
+                android:orientation="vertical">
 
             <!--滑动速度标题及当前数值-->
             <LinearLayout
@@ -371,12 +432,22 @@
             </LinearLayout>
 
             <!--自动后退附加功能（独立于三种模式，勾选后按设置的后退时间执行后退）-->
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/tbConfigContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small"
-                android:orientation="vertical">
+                app:cardBackgroundColor="@color/tb_group_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tb_group_stroke"
+                app:strokeWidth="1dp"
+                app:contentPadding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -444,8 +515,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/margin_small"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -454,53 +524,80 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="@dimen/text_size_body" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/tbQuick16Button"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:minWidth="0dp"
-                        android:paddingHorizontal="14dp"
-                        android:text="@string/tb_quick_16"
-                        android:textColor="@color/toggle_btn_text"
-                        app:backgroundTint="@color/toggle_btn_bg" />
+                        android:layout_marginTop="8dp"
+                        android:scrollbars="none">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/tbQuick21Button"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:minWidth="0dp"
-                        android:paddingHorizontal="14dp"
-                        android:text="@string/tb_quick_21"
-                        android:textColor="@color/toggle_btn_text"
-                        app:backgroundTint="@color/toggle_btn_bg" />
+                        <LinearLayout
+                            android:id="@+id/tbQuickButtonsRow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/tbQuick31Button"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:minWidth="0dp"
-                        android:paddingHorizontal="14dp"
-                        android:text="@string/tb_quick_31"
-                        android:textColor="@color/toggle_btn_text"
-                        app:backgroundTint="@color/toggle_btn_bg" />
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tbQuick16Button"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:minWidth="0dp"
+                                android:paddingHorizontal="8dp"
+                                android:text="@string/tb_quick_16"
+                                android:textColor="@color/toggle_btn_text"
+                                app:backgroundTint="@color/toggle_btn_bg" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/tbQuick91Button"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:minWidth="0dp"
-                        android:paddingHorizontal="14dp"
-                        android:text="@string/tb_quick_91"
-                        android:textColor="@color/toggle_btn_text"
-                        app:backgroundTint="@color/toggle_btn_bg" />
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tbQuick21Button"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:minWidth="0dp"
+                                android:paddingHorizontal="8dp"
+                                android:text="@string/tb_quick_21"
+                                android:textColor="@color/toggle_btn_text"
+                                app:backgroundTint="@color/toggle_btn_bg" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tbQuick31Button"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:minWidth="0dp"
+                                android:paddingHorizontal="8dp"
+                                android:text="@string/tb_quick_31"
+                                android:textColor="@color/toggle_btn_text"
+                                app:backgroundTint="@color/toggle_btn_bg" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tbQuick91Button"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:minWidth="0dp"
+                                android:paddingHorizontal="8dp"
+                                android:text="@string/tb_quick_91"
+                                android:textColor="@color/toggle_btn_text"
+                                app:backgroundTint="@color/toggle_btn_bg" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tbQuickAddButton"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:minWidth="0dp"
+                                android:paddingHorizontal="8dp"
+                                android:text="@string/tb_quick_add"
+                                android:textColor="@color/toggle_btn_text"
+                                app:backgroundTint="@color/toggle_btn_bg" />
+                        </LinearLayout>
+                    </HorizontalScrollView>
                 </LinearLayout>
 
                 <!--音效/震动提示勾选（仅"自动后退"勾选时显示）-->
@@ -532,7 +629,9 @@
                         app:buttonTint="@color/primary" />
                 </LinearLayout>
             </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

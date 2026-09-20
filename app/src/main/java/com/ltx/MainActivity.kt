@@ -20,6 +20,8 @@ import android.util.TypedValue
 import android.widget.CompoundButton
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -33,6 +35,9 @@ import com.google.android.material.textfield.TextInputLayout
 import com.ltx.databinding.ActivityMainBinding
 import com.ltx.service.AutoSlideService
 import com.ltx.service.FloatingWindowService
+import android.content.res.ColorStateList
+import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,6 +58,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var preferences: SharedPreferences
     var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
     var mainDispatcher: CoroutineDispatcher = Dispatchers.Main
+
+    /* 自动后退常用秒数按钮集合（预置 + 自定义），用于高亮当前选中项 */
+    private val tbQuickButtons = mutableListOf<MaterialButton>()
+    private val presetTbSeconds = setOf(16, 21, 31, 91)
 
     /* 全局常量 */
     companion object {
@@ -160,6 +169,9 @@ class MainActivity : AppCompatActivity() {
         binding.overlayPermissionSwitch.setOnCheckedChangeListener(overlaySwitchListener)
         setupStartButton()
         setupUpdateButton()
+        // 分类卡片展开/收纳（偏好设置默认展开，必要权限默认展开）
+        setupCollapsible(binding.preferenceHeader, binding.preferenceParamsContainer, binding.preferenceChevron, expanded = true)
+        setupCollapsible(binding.permissionHeader, binding.permissionParamsContainer, binding.permissionChevron, expanded = true)
         // 注册Shizuku监听器
         binding.root.post {
             Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
@@ -341,6 +353,16 @@ class MainActivity : AppCompatActivity() {
             }.setNegativeButton(R.string.cancel, null).show()
     }
 
+    /* 分类卡片展开/收纳：点击标题栏切换参数容器可见性并旋转箭头 */
+    private fun setupCollapsible(header: View, params: View, chevron: ImageView, expanded: Boolean) {
+        fun apply(expand: Boolean) {
+            params.isVisible = expand
+            chevron.animate().rotation(if (expand) 0f else -90f).setDuration(180).start()
+        }
+        apply(expanded)
+        header.setOnClickListener { apply(!params.isVisible) }
+    }
+
     /* 绑定tb模式（定时后退）控件事件并持久化用户设置 */
     private fun setupTbControls() {
         binding.tbAutoBackCheckbox.setOnCheckedChangeListener { _, isChecked ->
@@ -351,11 +373,23 @@ class MainActivity : AppCompatActivity() {
             binding.tbPromptRow.isVisible = isChecked
             syncPauseConfigToService()
         }
-        // 常用后退时间快捷选择（16秒 / 21秒 / 31秒 / 91秒）
-        binding.tbQuick16Button.setOnClickListener { setTbBackTime(16) }
-        binding.tbQuick21Button.setOnClickListener { setTbBackTime(21) }
-        binding.tbQuick31Button.setOnClickListener { setTbBackTime(31) }
-        binding.tbQuick91Button.setOnClickListener { setTbBackTime(91) }
+        // 常用后退时间快捷选择（预置 16秒 / 21秒 / 31秒 / 91秒 + 用户自定义）
+        registerTbQuickButton(binding.tbQuick16Button, 16)
+        registerTbQuickButton(binding.tbQuick21Button, 21)
+        registerTbQuickButton(binding.tbQuick31Button, 31)
+        registerTbQuickButton(binding.tbQuick91Button, 91)
+        // 添加自定义常用秒数入口（短按新增 / 长按批量管理删除）
+        binding.tbQuickAddButton.setOnClickListener { showAddCustomSecondDialog() }
+        binding.tbQuickAddButton.setOnLongClickListener {
+            showManageCustomSecondsDialog()
+            true
+        }
+        // 恢复已保存的自定义秒数按钮（插在“+”之前，即 91秒 之后）
+        preferences.getString(KEY_TB_CUSTOM_SECONDS, "").orEmpty()
+            .split(",").mapNotNull { it.toIntOrNull() }.filter { it > 0 && it !in presetTbSeconds }
+            .distinct().forEach { addCustomTbSecond(it, persist = false) }
+        // 高亮当前选中的秒数按钮
+        updateTbQuickHighlight(binding.tbBackTimeSlider.value.toInt())
         // 音效提示 / 震动提示 勾选（仅影响自动后退触发时的提示方式）
         binding.tbSoundCheckbox.setOnCheckedChangeListener { _, isChecked ->
             preferences.edit { putBoolean(KEY_TB_SOUND, isChecked) }
@@ -374,6 +408,7 @@ class MainActivity : AppCompatActivity() {
             binding.tbBackTimeValueText.text = progress.toString()
             if (fromUser) {
                 preferences.edit { putInt(KEY_TB_BACK_TIME, progress) }
+                updateTbQuickHighlight(progress)
             }
         }
         binding.tbBackTimeSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
@@ -394,7 +429,160 @@ class MainActivity : AppCompatActivity() {
         slider.value = seconds.toFloat()
         binding.tbBackTimeValueText.text = seconds.toString()
         preferences.edit { putInt(KEY_TB_BACK_TIME, seconds) }
+        updateTbQuickHighlight(seconds)
         syncPauseConfigToService()
+    }
+
+    /* 注册一个自动后退常用秒数按钮（绑定点击与标记；仅自定义按钮支持长按删除） */
+    private fun registerTbQuickButton(button: MaterialButton, seconds: Int) {
+        button.tag = seconds
+        button.setOnClickListener { setTbBackTime(seconds) }
+        if (seconds !in presetTbSeconds) {
+            button.setOnLongClickListener {
+                removeCustomTbSecond(seconds)
+                true
+            }
+        }
+        tbQuickButtons.add(button)
+    }
+
+    /* 创建一个自动后退常用秒数按钮（与预置按钮同款样式） */
+    @SuppressLint("SetTextI18n")
+    private fun createTbQuickButton(seconds: Int): MaterialButton {
+        val ref = binding.tbQuick16Button
+        val density = resources.displayMetrics.density
+        val btn = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle)
+        btn.text = "${seconds}s"
+        btn.minWidth = 0
+        btn.minimumWidth = 0
+        btn.isAllCaps = false
+        val hPad = (8 * density).toInt()
+        btn.setPadding(hPad, ref.paddingTop, hPad, ref.paddingBottom)
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginStart = (8 * density).toInt()
+        btn.layoutParams = lp
+        btn.backgroundTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(this, R.color.toggle_btn_bg)
+        )
+        btn.setTextColor(ContextCompat.getColor(this, R.color.toggle_btn_text))
+        return btn
+    }
+
+    /* 新增一个自定义常用秒数按钮（插在“+”之前，即 91秒 之后） */
+    private fun addCustomTbSecond(seconds: Int, persist: Boolean = true) {
+        if (tbQuickButtons.any { it.tag == seconds }) return
+        val btn = createTbQuickButton(seconds)
+        registerTbQuickButton(btn, seconds)
+        binding.tbQuickButtonsRow.addView(btn, binding.tbQuickButtonsRow.childCount - 1)
+        if (persist) updateTbCustomSecondsPref()
+    }
+
+    /* 持久化自定义常用秒数列表 */
+    private fun updateTbCustomSecondsPref() {
+        val customs = tbQuickButtons.mapNotNull { it.tag as? Int }
+            .filter { it !in presetTbSeconds }.distinct().sorted()
+        preferences.edit { putString(KEY_TB_CUSTOM_SECONDS, customs.joinToString(",")) }
+    }
+
+    /* 删除一个自定义常用秒数按钮（预置按钮不可删）；silent 用于批量删除时只弹一次总提示 */
+    private fun removeCustomTbSecond(seconds: Int, silent: Boolean = false) {
+        val idx = tbQuickButtons.indexOfFirst { it.tag == seconds }
+        if (idx < 0) return
+        binding.tbQuickButtonsRow.removeView(tbQuickButtons[idx])
+        tbQuickButtons.removeAt(idx)
+        updateTbCustomSecondsPref()
+        updateTbQuickHighlight(binding.tbBackTimeSlider.value.toInt())
+        if (!silent) {
+            Toast.makeText(this, getString(R.string.tb_custom_second_deleted, "${seconds}s"), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /* 批量管理自定义常用秒数：多选后删除（长按“+”按钮进入） */
+    @SuppressLint("SetTextI18n")
+    private fun showManageCustomSecondsDialog() {
+        val customs = tbQuickButtons.mapNotNull { it.tag as? Int }
+            .filter { it !in presetTbSeconds }.distinct().sorted()
+        if (customs.isEmpty()) {
+            Toast.makeText(this, R.string.tb_no_custom_second, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val items = customs.map { "${it}s" }.toTypedArray()
+        val checked = BooleanArray(customs.size)
+        val selected = mutableSetOf<Int>()
+        var dialogRef: AlertDialog? = null
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.tb_manage_custom_second)
+            .setMultiChoiceItems(items, checked) { _, which, isChecked ->
+                if (isChecked) selected.add(customs[which]) else selected.remove(customs[which])
+            }
+            .setNeutralButton(R.string.tb_select_all) { _, _ ->
+                val lv = dialogRef?.listView
+                for (i in customs.indices) {
+                    checked[i] = true
+                    selected.add(customs[i])
+                    lv?.setItemChecked(i, true)
+                }
+            }
+            .setPositiveButton(R.string.tb_delete_selected) { _, _ ->
+                if (selected.isNotEmpty()) {
+                    val n = selected.size
+                    selected.toList().forEach { removeCustomTbSecond(it, silent = true) }
+                    Toast.makeText(this, getString(R.string.tb_custom_second_deleted_multi, n), Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+        dialogRef = dialog
+        dialog.show()
+    }
+
+    /* 高亮当前选中的秒数按钮，其余恢复默认底色 */
+    private fun updateTbQuickHighlight(seconds: Int) {
+        for (btn in tbQuickButtons) {
+            val sec = btn.tag as? Int ?: continue
+            val selected = sec == seconds
+            btn.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(this, if (selected) R.color.primary else R.color.toggle_btn_bg)
+            )
+            btn.setTextColor(
+                ContextCompat.getColor(this, if (selected) R.color.on_primary else R.color.toggle_btn_text)
+            )
+        }
+    }
+
+    /* 显示添加自定义常用秒数对话框 */
+    @SuppressLint("SetTextI18n")
+    private fun showAddCustomSecondDialog() {
+        val textInputLayout = TextInputLayout(this).apply {
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            hint = getString(R.string.tb_custom_second_hint)
+        }
+        val editText = TextInputEditText(textInputLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+        }
+        textInputLayout.addView(editText)
+        val padding = (24 * resources.displayMetrics.density).toInt()
+        val container = FrameLayout(this).apply {
+            setPadding(padding, padding / 2, padding, padding / 3)
+            addView(textInputLayout)
+        }
+        AlertDialog.Builder(this).setTitle(R.string.tb_custom_second_hint).setView(container)
+            .setPositiveButton(AndroidR.string.ok) { _, _ ->
+                val value = editText.text.toString().toIntOrNull()
+                if (value == null || value <= 0) {
+                    Toast.makeText(this, R.string.invalid_input_number, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                if (tbQuickButtons.any { it.tag == value }) {
+                    Toast.makeText(this, R.string.tb_custom_second_exists, Toast.LENGTH_SHORT).show()
+                    setTbBackTime(value)
+                    return@setPositiveButton
+                }
+                addCustomTbSecond(value)
+                setTbBackTime(value)
+            }.setNegativeButton(R.string.cancel, null).show()
     }
 
     /* 显示自定义后退时间输入对话框 */
@@ -423,6 +611,7 @@ class MainActivity : AppCompatActivity() {
                     binding.tbBackTimeSlider.valueTo = maxOf(60, value).toFloat()
                     binding.tbBackTimeSlider.value = value.toFloat()
                     binding.tbBackTimeValueText.text = value.toString()
+                    updateTbQuickHighlight(value)
                     syncPauseConfigToService()
                 } else {
                     Toast.makeText(this, R.string.invalid_input_number, Toast.LENGTH_SHORT).show()

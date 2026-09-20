@@ -16,4 +16,7 @@
     <color name="floating_btn_close_bg">#3B2020</color>
     <color name="floating_btn_close_icon">#F2B8B5</color>
     <color name="floating_panel_bg">#FF1E1E24</color>
+    <!--“自动后退”参数分组色块底色与描边-->
+    <color name="tb_group_bg">#242530</color>
+    <color name="tb_group_stroke">#34343E</color>
 </resources>

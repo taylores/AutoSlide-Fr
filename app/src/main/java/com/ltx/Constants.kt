@@ -29,7 +29,9 @@ const val KEY_TB_AUTO_BACK = "tbAutoBack"
 const val KEY_TB_BACK_TIME = "tbBackTime"
 const val KEY_TB_SOUND = "tbSound"
 const val KEY_TB_VIBRATE = "tbVibrate"
-const val DEFAULT_TB_AUTO_BACK = true
+// 自定义常用后退秒数（逗号分隔，如 "101,151"）
+const val KEY_TB_CUSTOM_SECONDS = "tbCustomSeconds"
+const val DEFAULT_TB_AUTO_BACK = false
 const val DEFAULT_TB_BACK_TIME = 15
 const val DEFAULT_TB_SOUND = true
 const val DEFAULT_TB_VIBRATE = false
