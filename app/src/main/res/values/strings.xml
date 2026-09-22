@@ -57,7 +57,7 @@
     <string name="pause_mode_random">随机时间</string>
     <string name="pause_mode_tb">tb</string>
     <string name="tb_auto_back">自动后退</string>
-    <string name="tb_back_time">后退时间（秒）：</string>
+    <string name="tb_back_time">单次后退间隔时间（秒）：</string>
     <string name="custom_tb_back_time">自定义后退时间（秒）</string>
     <string name="tb_quick_select">常用：</string>
     <string name="tb_quick_16">16s</string>
@@ -97,4 +97,56 @@
     <string name="install_permission_required">需要开启安装未知应用权限</string>
     <string name="tile_label">自动滑动</string>
     <string name="tile_permission_toast">请先授予无障碍和悬浮窗权限</string>
+    <!--界面设置 / 悬浮框布局方案-->
+    <string name="title_ui_settings">界面设置</string>
+    <string name="ui_layout_schemes">布局方案</string>
+    <string name="new_scheme">新建方案</string>
+    <string name="edit_current_layout">编辑当前布局</string>
+    <string name="scheme_name_hint">方案名称</string>
+    <string name="columns">列数</string>
+    <string name="rows">行数</string>
+    <string name="buttons_order_hint">拖动排序，勾选“显示”决定按钮是否出现在悬浮框</string>
+    <string name="show">显示</string>
+    <string name="edit">编辑</string>
+    <string name="clone">复制</string>
+    <string name="delete">删除</string>
+    <string name="builtin_tag">内置</string>
+    <string name="done">完成</string>
+    <string name="floating_edit_hint">编辑模式：拖动按钮调整位置，点“完成”保存</string>
+    <string name="scheme_saved">布局已保存</string>
+    <string name="scheme_copy_suffix">自定义</string>
+    <string name="scheme_default_name">我的布局</string>
+    <string name="scheme_name_empty">请输入方案名称</string>
+    <string name="scheme_no_button">至少需要显示一个按钮</string>
+    <string name="delete_scheme">删除方案</string>
+    <string name="delete_scheme_confirm">确定删除该布局方案？</string>
+    <string name="save">保存</string>
+    <string name="floating_default_position">默认出现位置</string>
+    <string name="pos_tl">左上角</string>
+    <string name="pos_tc">上中</string>
+    <string name="pos_tr">右上角</string>
+    <string name="pos_ml">左中</string>
+    <string name="pos_orig">原位置</string>
+    <string name="pos_mr">右中</string>
+    <string name="pos_bl">左下角</string>
+    <string name="pos_bc">下中</string>
+    <string name="pos_br">右下角</string>
+
+    <!--界面设置：按键大小与配色-->
+    <string name="floating_appearance">按键大小与配色</string>
+    <string name="shape">形状</string>
+    <string name="shape_circle">圆形</string>
+    <string name="shape_square">方块</string>
+    <string name="btn_size">大小</string>
+    <string name="btn_corner">圆角（仅方块）</string>
+    <string name="floating_theme">配色方案</string>
+    <string name="theme_default">默认蓝</string>
+    <string name="theme_dark">暗夜黑</string>
+    <string name="theme_mint">薄荷绿</string>
+    <string name="theme_sunset">落日橙</string>
+    <string name="custom_color">自定义主色</string>
+    <string name="color_hex_hint">颜色值（#RRGGBB）</string>
+    <string name="size_dp_format">%1$d dp</string>
+    <string name="appearance_preview_hint">拖动滑块或切换样式即可实时预览悬浮框”</string>
+    <string name="reset_appearance">恢复默认大小与圆角</string>
 </resources>

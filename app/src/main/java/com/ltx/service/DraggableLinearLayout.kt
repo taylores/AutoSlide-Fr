@@ -24,6 +24,9 @@ class DraggableLinearLayout @JvmOverloads constructor(
     private var isDragging = false
     private var onDragListener: OnDragListener? = null
 
+    /** 是否允许拖拽移动整个悬浮框（编辑模式下置 false，避免与按钮拖动冲突） */
+    var dragEnabled = true
+
     /**
      * 拖拽监听接口
      */
@@ -61,6 +64,7 @@ class DraggableLinearLayout @JvmOverloads constructor(
      * @return 是否拦截触摸事件
      */
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        if (!dragEnabled) return false
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
                 initialTouchX = ev.rawX
@@ -107,6 +111,7 @@ class DraggableLinearLayout @JvmOverloads constructor(
      * @return 是否处理触摸事件
      */
     override fun onTouchEvent(ev: MotionEvent): Boolean {
+        if (!dragEnabled) return super.onTouchEvent(ev)
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
                 return true

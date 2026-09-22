@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="6dp"
+    android:background="?attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/schemeRadio"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/ic_radio"
+        android:tint="@color/text_secondary" />
+
+    <TextView
+        android:id="@+id/schemeName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/text_size_body" />
+
+    <TextView
+        android:id="@+id/schemeBuiltin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/builtin_tag"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/schemeEdit"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:minWidth="0dp"
+        android:paddingHorizontal="10dp"
+        android:textSize="12sp"
+        android:text="@string/edit" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/schemeDelete"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:minWidth="0dp"
+        android:paddingHorizontal="10dp"
+        android:textSize="12sp"
+        android:text="@string/delete" />
+</LinearLayout>

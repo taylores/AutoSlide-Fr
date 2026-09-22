@@ -17,6 +17,8 @@
     <color name="floating_btn_close_bg">#FDECEC</color>
     <color name="floating_btn_close_icon">#C62828</color>
     <color name="floating_panel_bg">#FFE8E9F5</color>
+    <!--方案列表中选中行的浅色高亮底色-->
+    <color name="scheme_selected_bg">#1F545995</color>
     <!--“自动后退”参数分组色块底色与描边-->
     <color name="tb_group_bg">#E7E9F4</color>
     <color name="tb_group_stroke">#D6D9E8</color>

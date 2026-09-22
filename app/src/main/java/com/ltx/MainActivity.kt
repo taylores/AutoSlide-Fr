@@ -6,7 +6,10 @@ import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.BroadcastReceiver
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Paint
@@ -35,9 +38,33 @@ import com.google.android.material.textfield.TextInputLayout
 import com.ltx.databinding.ActivityMainBinding
 import com.ltx.service.AutoSlideService
 import com.ltx.service.FloatingWindowService
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.widget.CheckBox
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.content.res.ColorStateList
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.widget.GridLayout
+import android.widget.ImageButton
+import com.ltx.ACTION_FLOATING_APPEARANCE_CHANGED
+import com.ltx.DEFAULT_FLOATING_BTN_SIZE
+import com.ltx.DEFAULT_FLOATING_CORNER
+import com.ltx.DEFAULT_FLOATING_CUSTOM_COLOR
+import com.ltx.DEFAULT_FLOATING_SHAPE
+import com.ltx.DEFAULT_FLOATING_THEME
+import com.ltx.KEY_FLOATING_BTN_SIZE
+import com.ltx.KEY_FLOATING_CORNER
+import com.ltx.KEY_FLOATING_CUSTOM_COLOR
+import com.ltx.KEY_FLOATING_SHAPE
+import com.ltx.KEY_FLOATING_THEME
+import com.ltx.SHAPE_CIRCLE
+import com.ltx.SHAPE_SQUARE
+import com.ltx.THEME_CUSTOM
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,6 +89,13 @@ class MainActivity : AppCompatActivity() {
     /* 自动后退常用秒数按钮集合（预置 + 自定义），用于高亮当前选中项 */
     private val tbQuickButtons = mutableListOf<MaterialButton>()
     private val presetTbSeconds = setOf(16, 21, 31, 91)
+
+    /* 悬浮框保存布局方案后刷新方案列表 */
+    private val schemeChangedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (!isFinishing && !isDestroyed) loadSchemesUI()
+        }
+    }
 
     /* 全局常量 */
     companion object {
@@ -172,6 +206,12 @@ class MainActivity : AppCompatActivity() {
         // 分类卡片展开/收纳（偏好设置默认展开，必要权限默认展开）
         setupCollapsible(binding.preferenceHeader, binding.preferenceParamsContainer, binding.preferenceChevron, expanded = true)
         setupCollapsible(binding.permissionHeader, binding.permissionParamsContainer, binding.permissionChevron, expanded = true)
+        setupUiSettings()
+        // 监听悬浮框保存布局方案后的刷新广播（overlay 不触发 onResume，需主动刷新）
+        ContextCompat.registerReceiver(
+            this, schemeChangedReceiver, IntentFilter(ACTION_FLOATING_SCHEME_CHANGED),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         // 注册Shizuku监听器
         binding.root.post {
             Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
@@ -181,6 +221,7 @@ class MainActivity : AppCompatActivity() {
     /* 活动恢复时检查⌈无障碍服务权限⌋并同步开关状态 */
     override fun onResume() {
         super.onResume()
+        loadSchemesUI()
         // 使用协程异步检查权限并同步开关状态
         lifecycleScope.launch(ioDispatcher) {
             val hasWriteSecure = hasWriteSecureSettingsPermission()
@@ -206,6 +247,7 @@ class MainActivity : AppCompatActivity() {
     /* 活动销毁时移除Shizuku权限请求监听器 */
     override fun onDestroy() {
         super.onDestroy()
+        runCatching { unregisterReceiver(schemeChangedReceiver) }
         Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
     }
 
@@ -1002,6 +1044,469 @@ class MainActivity : AppCompatActivity() {
             startService(floatingIntent)
             moveTaskToBack(true)
         }
+    }
+
+    /* 界面设置：布局方案分类（默认收纳） */
+    private fun setupUiSettings() {
+        setupCollapsible(binding.uiSettingsHeader, binding.uiSettingsParamsContainer, binding.uiSettingsChevron, expanded = false)
+        loadSchemesUI()
+        binding.btnNewScheme.setOnClickListener { openSchemeEditor(null) }
+        binding.btnEditCurrentLayout.setOnClickListener { launchEditCurrentLayout() }
+        setupPositionSelector()
+        setupAppearance()
+    }
+
+    /* 悬浮框默认出现位置选择（3x3 网格） */
+    private fun setupPositionSelector() {
+        val items = listOf(
+            binding.posTl to POS_TOP_LEFT,
+            binding.posTc to POS_TOP_CENTER,
+            binding.posTr to POS_TOP_RIGHT,
+            binding.posMl to POS_CENTER_LEFT,
+            binding.posOrig to POS_ORIGINAL,
+            binding.posMr to POS_CENTER_RIGHT,
+            binding.posBl to POS_BOTTOM_LEFT,
+            binding.posBc to POS_BOTTOM_CENTER,
+            binding.posBr to POS_BOTTOM_RIGHT
+        )
+        fun refresh() {
+            val sel = preferences.getInt(KEY_FLOATING_POSITION, DEFAULT_FLOATING_POSITION)
+            items.forEach { (btn, code) ->
+                val on = code == sel
+                btn.isEnabled = !on
+                btn.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(this, if (on) R.color.primary else R.color.toggle_btn_bg)
+                )
+                btn.setTextColor(ContextCompat.getColor(this, if (on) R.color.on_primary else R.color.toggle_btn_text))
+            }
+        }
+        items.forEach { (btn, code) ->
+            btn.setOnClickListener {
+                preferences.edit { putInt(KEY_FLOATING_POSITION, code) }
+                refresh()
+                if (FloatingWindowService.isRunning()) {
+                    sendBroadcast(Intent(ACTION_FLOATING_POSITION_CHANGED))
+                }
+            }
+        }
+        refresh()
+    }
+
+    /* 悬浮框外观（形状 / 大小 / 圆角 / 配色） */
+    private fun setupAppearance() {
+        // 形状：圆形 / 方块
+        val shapeItems = listOf(binding.shapeCircle to SHAPE_CIRCLE, binding.shapeSquare to SHAPE_SQUARE)
+        shapeItems.forEach { (btn, code) ->
+            btn.setOnClickListener {
+                preferences.edit { putInt(KEY_FLOATING_SHAPE, code) }
+                refreshAppearanceShape()
+                previewFloating()
+                notifyAppearance()
+            }
+        }
+        // 大小滑块（36-72 dp）
+        val size = preferences.getInt(KEY_FLOATING_BTN_SIZE, DEFAULT_FLOATING_BTN_SIZE).coerceIn(36, 72)
+        binding.btnSizeSlider.value = size.toFloat()
+        binding.btnSizeValue.text = getString(R.string.size_dp_format, size)
+        binding.btnSizeSlider.addOnChangeListener { _, value, fromUser ->
+            val v = value.toInt().coerceIn(36, 72)
+            binding.btnSizeValue.text = getString(R.string.size_dp_format, v)
+            if (fromUser) {
+                preferences.edit { putInt(KEY_FLOATING_BTN_SIZE, v) }
+                val maxCorner = v / 2
+                if (binding.cornerSlider.value > maxCorner.toFloat()) {
+                    binding.cornerSlider.value = maxCorner.toFloat()
+                    binding.cornerValue.text = getString(R.string.size_dp_format, maxCorner)
+                    preferences.edit { putInt(KEY_FLOATING_CORNER, maxCorner) }
+                } else {
+                    binding.cornerSlider.valueTo = maxCorner.toFloat()
+                }
+                previewFloating()
+                notifyAppearance()
+            }
+        }
+        // 圆角滑块（仅方块有意义，上限随大小变化）
+        val maxCorner = size / 2
+        binding.cornerSlider.valueFrom = 0f
+        binding.cornerSlider.valueTo = maxCorner.toFloat()
+        val corner = preferences.getInt(KEY_FLOATING_CORNER, DEFAULT_FLOATING_CORNER).coerceIn(0, maxCorner)
+        binding.cornerSlider.value = corner.toFloat()
+        binding.cornerValue.text = getString(R.string.size_dp_format, corner)
+        binding.cornerSlider.addOnChangeListener { _, value, fromUser ->
+            val v = value.toInt().coerceIn(0, maxCorner)
+            binding.cornerValue.text = getString(R.string.size_dp_format, v)
+            if (fromUser) {
+                preferences.edit { putInt(KEY_FLOATING_CORNER, v) }
+                previewFloating()
+                notifyAppearance()
+            }
+        }
+        // 配色方案：预设 + 自定义
+        val themeItems = listOf(
+            binding.themeDefault to 0, binding.themeDark to 1,
+            binding.themeMint to 2, binding.themeSunset to 3
+        )
+        themeItems.forEach { (btn, code) ->
+            btn.setOnClickListener {
+                preferences.edit { putInt(KEY_FLOATING_THEME, code) }
+                refreshAppearanceTheme()
+                previewFloating()
+                notifyAppearance()
+            }
+        }
+        binding.btnCustomColor.setOnClickListener { previewFloating(); openColorPicker() }
+        // 恢复大小与圆角默认值（图标按钮，无文本）
+        binding.btnResetAppearance.setOnClickListener {
+            preferences.edit {
+                putInt(KEY_FLOATING_BTN_SIZE, DEFAULT_FLOATING_BTN_SIZE)
+                putInt(KEY_FLOATING_CORNER, DEFAULT_FLOATING_CORNER)
+            }
+            binding.btnSizeSlider.value = DEFAULT_FLOATING_BTN_SIZE.toFloat()
+            binding.btnSizeValue.text = getString(R.string.size_dp_format, DEFAULT_FLOATING_BTN_SIZE)
+            binding.cornerSlider.valueTo = (DEFAULT_FLOATING_BTN_SIZE / 2).toFloat()
+            binding.cornerSlider.value = DEFAULT_FLOATING_CORNER.toFloat()
+            binding.cornerValue.text = getString(R.string.size_dp_format, DEFAULT_FLOATING_CORNER)
+            previewFloating()
+            notifyAppearance()
+        }
+        refreshAppearanceShape()
+        refreshAppearanceTheme()
+    }
+
+    /* 刷新形状选择高亮，并启用/禁用圆角滑块 */
+    private fun refreshAppearanceShape() {
+        val sel = preferences.getInt(KEY_FLOATING_SHAPE, DEFAULT_FLOATING_SHAPE)
+        val shapeItems = listOf(binding.shapeCircle to SHAPE_CIRCLE, binding.shapeSquare to SHAPE_SQUARE)
+        shapeItems.forEach { (btn, code) ->
+            val on = code == sel
+            btn.isEnabled = !on
+            btn.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(this, if (on) R.color.primary else R.color.toggle_btn_bg)
+            )
+            btn.setTextColor(ContextCompat.getColor(this, if (on) R.color.on_primary else R.color.toggle_btn_text))
+        }
+        val isCircle = sel == SHAPE_CIRCLE
+        binding.cornerBlock.isEnabled = !isCircle
+        binding.cornerBlock.alpha = if (isCircle) 0.4f else 1f
+    }
+
+    /* 刷新配色方案选择高亮 */
+    private fun refreshAppearanceTheme() {
+        val sel = preferences.getInt(KEY_FLOATING_THEME, DEFAULT_FLOATING_THEME)
+        val themeItems = listOf(
+            binding.themeDefault to 0, binding.themeDark to 1,
+            binding.themeMint to 2, binding.themeSunset to 3
+        )
+        themeItems.forEach { (btn, code) ->
+            val on = code == sel
+            btn.isEnabled = !on
+            btn.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(this, if (on) R.color.primary else R.color.toggle_btn_bg)
+            )
+            btn.setTextColor(ContextCompat.getColor(this, if (on) R.color.on_primary else R.color.toggle_btn_text))
+        }
+        val custom = sel == THEME_CUSTOM
+        binding.btnCustomColor.backgroundTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(this, if (custom) R.color.primary else R.color.toggle_btn_bg)
+        )
+        binding.btnCustomColor.setTextColor(ContextCompat.getColor(this, if (custom) R.color.on_primary else R.color.toggle_btn_text))
+    }
+
+    /* 外观变更广播（悬浮框运行时实时生效） */
+    private fun notifyAppearance() {
+        if (FloatingWindowService.isRunning()) {
+            sendBroadcast(Intent(ACTION_FLOATING_APPEARANCE_CHANGED))
+        }
+    }
+
+    /* 自定义主色取色器（色板点选 + 十六进制输入） */
+    private fun openColorPicker() {
+        val current = preferences.getInt(KEY_FLOATING_CUSTOM_COLOR, DEFAULT_FLOATING_CUSTOM_COLOR)
+        val view = layoutInflater.inflate(R.layout.dialog_color_picker, null)
+        val preview = view.findViewById<View>(R.id.colorPreview)
+        val hexEdit = view.findViewById<TextInputEditText>(R.id.colorHexEdit)
+        val swatches = view.findViewById<GridLayout>(R.id.colorSwatches)
+        var chosen = current
+        fun applyPreview(c: Int) {
+            chosen = c
+            preview.background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(c)
+            }
+            hexEdit.setText(String.format("#%06X", c and 0xFFFFFF))
+        }
+        val dp = resources.displayMetrics.density
+        val paletteColors = listOf(
+            0xFF545995, 0xFF2BB7A3, 0xFFF08A24, 0xFFE53935, 0xFF8E24AA, 0xFF1E88E5,
+            0xFF43A047, 0xFF00897B, 0xFF6D4C41, 0xFF212121, 0xFFEC407A, 0xFFFBC02D,
+            0xFF26C6DA, 0xFF5E35B1, 0xFFC0CA33, 0xFFEF6C00
+        ).map { it.toInt() }
+        paletteColors.forEach { c ->
+            val dot = View(this).apply {
+                layoutParams = ViewGroup.LayoutParams((48 * dp).toInt(), (48 * dp).toInt())
+                background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(c) }
+                setOnClickListener { applyPreview(c) }
+            }
+            swatches.addView(dot)
+        }
+        applyPreview(current)
+        AlertDialog.Builder(this).setTitle(R.string.custom_color).setView(view)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val parsed = parseColorHex(hexEdit.text.toString()) ?: chosen
+                preferences.edit {
+                    putInt(KEY_FLOATING_CUSTOM_COLOR, parsed)
+                    putInt(KEY_FLOATING_THEME, THEME_CUSTOM)
+                }
+                refreshAppearanceTheme()
+                notifyAppearance()
+            }
+            .setNegativeButton(R.string.cancel, null).show()
+    }
+
+    /* 解析 #RRGGBB / RRGGBB 十六进制颜色 */
+    private fun parseColorHex(s: String): Int? {
+        val t = s.removePrefix("#").trim()
+        if (t.length != 6) return null
+        return runCatching { Color.parseColor("#$t") }.getOrNull()
+    }
+
+    /* 加载并展示布局方案列表 */
+    private fun loadSchemesUI() {
+        val schemes = SchemeStore.allSchemes(preferences)
+        val selectedId = SchemeStore.loadSelectedId(preferences)
+        binding.schemeList.layoutManager = LinearLayoutManager(this)
+        binding.schemeList.adapter = SchemeListAdapter(schemes, selectedId,
+            onSelect = { scheme ->
+                SchemeStore.saveSelectedId(preferences, scheme.id)
+                if (FloatingWindowService.isRunning()) {
+                    sendBroadcast(Intent(ACTION_APPLY_FLOATING_SCHEME).putExtra(EXTRA_FLOATING_SCHEME_ID, scheme.id))
+                }
+                loadSchemesUI()
+            },
+            onEdit = { scheme -> openSchemeEditor(scheme) },
+            onDelete = { scheme -> deleteScheme(scheme) }
+        )
+    }
+
+    /* 删除自定义方案 */
+    private fun deleteScheme(scheme: LayoutScheme) {
+        if (scheme.builtIn) return
+        AlertDialog.Builder(this).setTitle(R.string.delete_scheme)
+            .setMessage(R.string.delete_scheme_confirm)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                val customs = SchemeStore.loadCustomSchemes(preferences).toMutableList()
+                customs.removeAll { it.id == scheme.id }
+                SchemeStore.saveCustomSchemes(preferences, customs)
+                if (SchemeStore.loadSelectedId(preferences) == scheme.id) {
+                    SchemeStore.saveSelectedId(preferences, DEFAULT_FLOATING_SCHEME_ID)
+                    
+                    //删除选中方案后实时刷新悬浮框
+                    if (FloatingWindowService.isRunning()) {
+                        sendBroadcast(Intent(ACTION_APPLY_FLOATING_SCHEME).putExtra(EXTRA_FLOATING_SCHEME_ID, DEFAULT_FLOATING_SCHEME_ID))
+                    }
+                }
+                loadSchemesUI()
+            }.setNegativeButton(R.string.cancel, null).show()
+    }
+
+    /* 从设置页拉起悬浮框并进入编辑模式 */
+    private fun launchEditCurrentLayout() {
+        if (!Settings.canDrawOverlays(this)) {
+            ensureOverlayPermission()
+            return
+        }
+        startService(Intent(this, FloatingWindowService::class.java).putExtra(EXTRA_FLOATING_EDIT_MODE, true))
+    }
+
+    /* 拉起悬浮框作为实时预览（非编辑模式）；若已在运行则不做处理 */
+    private fun previewFloating() {
+        if (FloatingWindowService.isRunning()) return
+        if (!Settings.canDrawOverlays(this)) return
+        startService(Intent(this, FloatingWindowService::class.java))
+    }
+
+    /* 打开方案编辑器（base 为 null=新建；内置方案=复制为新方案） */
+    private fun openSchemeEditor(base: LayoutScheme?) {
+        val isBuiltIn = base?.builtIn == true
+        val editingExisting = base != null && !isBuiltIn
+        val ordered = base?.visibleTypes() ?: FloatingButtonType.DEFAULT_ORDER
+        val hidden = FloatingButtonType.DEFAULT_ORDER.filter { it !in ordered }
+        val items = (ordered.map { EditorItem(it, true) } + hidden.map { EditorItem(it, false) }).toMutableList()
+        var columns = base?.columns ?: 3
+        var rows = base?.let { it.placements.maxOfOrNull { it.row }?.plus(1) }
+            ?: ((FloatingButtonType.DEFAULT_ORDER.size + columns - 1) / columns).coerceAtLeast(1)
+
+        val view = layoutInflater.inflate(R.layout.scheme_editor, null)
+        val nameEdit = view.findViewById<TextInputEditText>(R.id.schemeNameEdit)
+        val colButtons = listOf(
+            view.findViewById<MaterialButton>(R.id.col1),
+            view.findViewById(R.id.col2),
+            view.findViewById(R.id.col3),
+            view.findViewById(R.id.col4),
+            view.findViewById(R.id.col5),
+            view.findViewById(R.id.col6),
+            view.findViewById(R.id.col7)
+        )
+        val rowButtons = listOf(
+            view.findViewById<MaterialButton>(R.id.row1),
+            view.findViewById(R.id.row2),
+            view.findViewById(R.id.row3),
+            view.findViewById(R.id.row4),
+            view.findViewById(R.id.row5),
+            view.findViewById(R.id.row6),
+            view.findViewById(R.id.row7)
+        )
+        val editorList = view.findViewById<RecyclerView>(R.id.editorList)
+        nameEdit.setText(if (editingExisting) base?.name else "")
+
+        fun refreshCols() {
+            colButtons.forEachIndexed { i, b ->
+                val on = (i + 1) == columns
+                b.isEnabled = !on
+                b.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(this, if (on) R.color.primary else R.color.toggle_btn_bg)
+                )
+                b.setTextColor(ContextCompat.getColor(this, if (on) R.color.on_primary else R.color.toggle_btn_text))
+            }
+        }
+        fun refreshRows() {
+            rowButtons.forEachIndexed { i, b ->
+                val on = (i + 1) == rows
+                b.isEnabled = !on
+                b.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(this, if (on) R.color.primary else R.color.toggle_btn_bg)
+                )
+                b.setTextColor(ContextCompat.getColor(this, if (on) R.color.on_primary else R.color.toggle_btn_text))
+            }
+        }
+        colButtons.forEachIndexed { i, b -> b.setOnClickListener { columns = i + 1; refreshCols() } }
+        rowButtons.forEachIndexed { i, b -> b.setOnClickListener { rows = i + 1; refreshRows() } }
+        refreshCols()
+        refreshRows()
+
+        val editorAdapter = EditorListAdapter(items)
+        editorList.layoutManager = LinearLayoutManager(this)
+        editorList.adapter = editorAdapter
+        val touchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.START or ItemTouchHelper.END, 0) {
+            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                val from = vh.bindingAdapterPosition
+                val to = target.bindingAdapterPosition
+                if (from < 0 || to < 0) return false
+                items.add(to, items.removeAt(from))
+                editorAdapter.notifyItemMoved(from, to)
+                return true
+            }
+            override fun onSwiped(vh: RecyclerView.ViewHolder, dir: Int) {}
+        })
+        touchHelper.attachToRecyclerView(editorList)
+        editorAdapter.onDragHandle = { vh -> touchHelper.startDrag(vh) }
+
+        val dialog = AlertDialog.Builder(this).setTitle(
+            if (editingExisting) R.string.edit else if (isBuiltIn) R.string.clone else R.string.new_scheme
+        ).setView(view)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val name = nameEdit.text.toString().trim().ifEmpty { getString(R.string.scheme_default_name) }
+                val visible = items.filter { it.visible }.map { it.type }
+                if (visible.isEmpty()) {
+                    Toast.makeText(this, R.string.scheme_no_button, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                val placements = generateByColumnFill(visible, columns, rows) //保存时按 行/列 生成布局
+                val customs = SchemeStore.loadCustomSchemes(preferences).toMutableList()
+                val saved = if (editingExisting) {
+                    base!!.copy(name = name, columns = columns, placements = placements)
+                } else {
+                    LayoutScheme("custom_${System.currentTimeMillis()}", name, false, columns, placements)
+                }
+                if (editingExisting) {
+                    val idx = customs.indexOfFirst { it.id == saved.id }
+                    if (idx >= 0) customs[idx] = saved else customs.add(saved)
+                } else {
+                    customs.add(saved)
+                }
+                SchemeStore.saveCustomSchemes(preferences, customs)
+                SchemeStore.saveSelectedId(preferences, saved.id)
+                if (FloatingWindowService.isRunning()) {
+                    sendBroadcast(Intent(ACTION_APPLY_FLOATING_SCHEME).putExtra(EXTRA_FLOATING_SCHEME_ID, saved.id))
+                }
+                loadSchemesUI()
+            }
+            .setNegativeButton(R.string.cancel, null)
+        if (editingExisting) {
+            dialog.setNeutralButton(R.string.delete) { _, _ -> deleteScheme(base!!) }
+        }
+        dialog.show()
+    }
+
+    /* 布局方案列表项数据 */
+    private data class EditorItem(var type: FloatingButtonType, var visible: Boolean)
+
+    /* 布局方案列表适配器 */
+    private class SchemeListAdapter(
+        private val schemes: List<LayoutScheme>,
+        private val selectedId: String,
+        private val onSelect: (LayoutScheme) -> Unit,
+        private val onEdit: (LayoutScheme) -> Unit,
+        private val onDelete: (LayoutScheme) -> Unit
+    ) : RecyclerView.Adapter<SchemeListAdapter.VH>() {
+        class VH(val view: View) : RecyclerView.ViewHolder(view) {
+            val radio: ImageView = view.findViewById(R.id.schemeRadio)
+            val name: TextView = view.findViewById(R.id.schemeName)
+            val builtin: TextView = view.findViewById(R.id.schemeBuiltin)
+            val edit: MaterialButton = view.findViewById(R.id.schemeEdit)
+            val delete: MaterialButton = view.findViewById(R.id.schemeDelete)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
+            VH(LayoutInflater.from(parent.context).inflate(R.layout.scheme_item, parent, false))
+
+        override fun onBindViewHolder(vh: VH, position: Int) {
+            val scheme = schemes[position]
+            val selected = scheme.id == selectedId
+            vh.radio.setImageResource(if (selected) R.drawable.ic_radio_selected else R.drawable.ic_radio)
+            vh.radio.imageTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(vh.view.context, if (selected) R.color.primary else R.color.text_secondary)
+            )
+            vh.name.text = scheme.name
+            vh.name.setTypeface(null, if (selected) Typeface.BOLD else Typeface.NORMAL)
+            vh.view.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(vh.view.context, if (selected) R.color.scheme_selected_bg else android.R.color.transparent)
+            )
+            vh.builtin.visibility = if (scheme.builtIn) View.VISIBLE else View.GONE
+            vh.edit.setText(if (scheme.builtIn) R.string.clone else R.string.edit)
+            vh.delete.visibility = if (scheme.builtIn) View.GONE else View.VISIBLE
+            vh.view.setOnClickListener { onSelect(scheme) }
+            vh.edit.setOnClickListener { onEdit(scheme) }
+            vh.delete.setOnClickListener { onDelete(scheme) }
+        }
+
+        override fun getItemCount(): Int = schemes.size
+    }
+
+    /* 编辑器内按钮排序列表适配器 */
+    private class EditorListAdapter(private val items: MutableList<EditorItem>) :
+        RecyclerView.Adapter<EditorListAdapter.VH>() {
+        var onDragHandle: ((RecyclerView.ViewHolder) -> Unit)? = null
+
+        class VH(val view: View) : RecyclerView.ViewHolder(view) {
+            val handle: TextView = view.findViewById(R.id.dragHandle)
+            val name: TextView = view.findViewById(R.id.btnName)
+            val visible: CheckBox = view.findViewById(R.id.btnVisible)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
+            VH(LayoutInflater.from(parent.context).inflate(R.layout.scheme_editor_item, parent, false))
+
+        override fun onBindViewHolder(vh: VH, position: Int) {
+            val item = items[position]
+            vh.name.text = vh.view.context.getString(item.type.labelRes)
+            vh.visible.isChecked = item.visible
+            vh.visible.setOnCheckedChangeListener { _, c -> item.visible = c }
+            vh.handle.setOnTouchListener { _, _ -> onDragHandle?.invoke(vh); false }
+        }
+
+        override fun getItemCount(): Int = items.size
     }
 
     /* 绑定⌈检查更新⌋按钮点击事件 */
