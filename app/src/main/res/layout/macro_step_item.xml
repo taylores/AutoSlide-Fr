@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:background="@drawable/step_item_bg"
+    android:paddingStart="@dimen/margin_small"
+    android:paddingTop="6dp"
+    android:paddingEnd="@dimen/margin_small"
+    android:paddingBottom="6dp"
+    android:layout_marginBottom="4dp">
+
+    <!-- 行1：逻辑信息 + 启动勾选框 + 拖动手柄（水平排列） -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/stepIndex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary"
+            android:paddingEnd="10dp"
+            android:gravity="center"
+            android:contentDescription="序号" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/stepName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/stepSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+
+        <CheckBox
+            android:id="@+id/stepEnabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingEnd="4dp" />
+
+        <TextView
+            android:id="@+id/stepHandle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="4dp"
+            android:text="☰"
+            android:textSize="20sp"
+            android:textColor="@color/toggle_btn_text"
+            android:gravity="center"
+            android:contentDescription="拖动排序" />
+
+    </LinearLayout>
+    
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/stepDetailBtn"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:paddingHorizontal="8dp"
+        android:text="@string/macro_step_detail"
+        android:textSize="12sp"
+        android:textColor="@color/btn_teal"
+        app:backgroundTint="@color/btn_teal_bg"
+        app:strokeColor="@color/btn_teal"
+        app:strokeWidth="1dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/stepCopy"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:paddingHorizontal="8dp"
+        android:text="@string/clone"
+        android:textSize="12sp"
+        android:textColor="@color/btn_purple"
+        app:backgroundTint="@color/btn_purple_bg"
+        app:strokeColor="@color/btn_purple"
+        app:strokeWidth="1dp" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/stepEdit"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:paddingHorizontal="8dp"
+        android:text="@string/edit"
+        android:textSize="12sp"
+        android:textColor="@color/btn_blue"
+        app:backgroundTint="@color/btn_blue_bg"
+        app:strokeColor="@color/btn_blue"
+        app:strokeWidth="1dp" />
+</LinearLayout>

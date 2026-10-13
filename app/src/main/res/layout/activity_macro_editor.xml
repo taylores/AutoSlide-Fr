@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/margin_medium"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/boxPlanName"
+        style="@style/FormBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/macro_plan_name">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/planName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_medium"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/stepTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/macro_steps"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_size_body"
+            android:textStyle="bold" />
+
+        <!-- 重复次数：与步骤标题同行；未填写时框内显示提示文本，填写后浮动到左上角 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/boxRepeatCount"
+            style="@style/FormBox"
+            android:layout_width="84dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:hint="@string/macro_repeat_count">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/repeatCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:inputType="number"
+                android:minHeight="0dp"
+                android:paddingVertical="8dp"
+                android:text="1"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/stepSelectAllBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/ic_select_all_bars"
+            app:tint="@color/toggle_btn_text"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/tb_select_all" />
+    </LinearLayout>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/stepList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="@dimen/margin_small"
+        android:nestedScrollingEnabled="true" />
+
+    <!-- 选中步骤后出现的公用操作栏（未选中时隐藏） -->
+    <LinearLayout
+        android:id="@+id/stepActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stepDetailBtn"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="2dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="9sp"
+            android:autoSizeMaxTextSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:text="详情ⓘ"
+            android:textSize="12sp"
+            android:textColor="@color/btn_teal"
+            app:backgroundTint="@color/btn_teal_bg"
+            app:strokeColor="@color/btn_teal"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/stepUpBtn"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="2dp"
+                android:text="▲"
+                android:textSize="12sp"
+                android:textColor="@color/btn_slate"
+                app:backgroundTint="@color/btn_slate_bg"
+                app:strokeColor="@color/btn_slate"
+                app:strokeWidth="1dp"
+                app:cornerRadius="10dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/stepDownBtn"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="2dp"
+                android:text="▼"
+                android:textSize="12sp"
+                android:textColor="@color/btn_slate"
+                app:backgroundTint="@color/btn_slate_bg"
+                app:strokeColor="@color/btn_slate"
+                app:strokeWidth="1dp"
+                app:cornerRadius="10dp" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stepEditBtn"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="2dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="9sp"
+            android:autoSizeMaxTextSize="13sp"
+            android:maxLines="1"
+            android:text="@string/edit"
+            android:textSize="12sp"
+            android:textColor="@color/btn_blue"
+            app:backgroundTint="@color/btn_blue_bg"
+            app:strokeColor="@color/btn_blue"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stepCopyBtn"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="2dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="9sp"
+            android:autoSizeMaxTextSize="13sp"
+            android:maxLines="1"
+            android:text="@string/macro_copy"
+            android:textSize="12sp"
+            android:textColor="@color/btn_purple"
+            app:backgroundTint="@color/btn_purple_bg"
+            app:strokeColor="@color/btn_purple"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stepReplicaBtn"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="2dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="9sp"
+            android:autoSizeMaxTextSize="13sp"
+            android:maxLines="1"
+            android:text="@string/macro_replica"
+            android:textSize="12sp"
+            android:textColor="@color/btn_indigo"
+            app:backgroundTint="@color/btn_indigo_bg"
+            app:strokeColor="@color/btn_indigo"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stepDeleteBtn"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="2dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="9sp"
+            android:autoSizeMaxTextSize="13sp"
+            android:maxLines="1"
+            android:text="@string/delete"
+            android:textSize="12sp"
+            android:textColor="@color/btn_red"
+            app:backgroundTint="@color/btn_red_bg"
+            app:strokeColor="@color/btn_red"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addStepButton"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="@string/macro_add_step"
+            android:textColor="@color/btn_indigo"
+            app:backgroundTint="@color/btn_indigo_bg"
+            app:strokeColor="@color/btn_indigo"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stepEmbedBtn"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="@string/macro_embed_step"
+            android:textColor="@color/btn_indigo"
+            app:backgroundTint="@color/btn_indigo_bg"
+            app:strokeColor="@color/btn_indigo"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/saveButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/macro_save"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/btn_green_fill"
+            app:cornerRadius="24dp" />
+    </LinearLayout>
+</LinearLayout>

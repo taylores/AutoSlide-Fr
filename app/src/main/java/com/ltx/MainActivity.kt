@@ -38,6 +38,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.ltx.databinding.ActivityMainBinding
 import com.ltx.service.AutoSlideService
 import com.ltx.service.FloatingWindowService
+import com.ltx.MacroPlanActivity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.CheckBox
@@ -1043,6 +1044,10 @@ class MainActivity : AppCompatActivity() {
             val floatingIntent = Intent(this, FloatingWindowService::class.java)
             startService(floatingIntent)
             moveTaskToBack(true)
+        }
+        // 任务方案：点击整张卡片进入（右侧箭头入口）
+        binding.macroCard.setOnClickListener {
+            startActivity(Intent(this, MacroPlanActivity::class.java))
         }
     }
 

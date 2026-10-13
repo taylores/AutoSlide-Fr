@@ -1,4 +1,4 @@
-package com.ltx
+﻿package com.ltx
 
 import android.content.SharedPreferences
 import android.graphics.Color
@@ -63,6 +63,14 @@ const val KEY_FLOATING_CUSTOM_COLOR = "floatingCustomColor"  // 自定义主色 
 const val DEFAULT_FLOATING_CUSTOM_COLOR = 0xFF545995.toInt()
 const val ACTION_FLOATING_APPEARANCE_CHANGED = "com.ltx.action.FLOATING_APPEARANCE_CHANGED"
 const val ACTION_FLOATING_POSITION_CHANGED = "com.ltx.action.FLOATING_POSITION_CHANGED"
+
+// 任务方案（组合动作宏）
+const val KEY_MACRO_PLANS = "macro_plans"
+// 宏启动前的等待时间：给用户切到目标 App 的机会，避免手势打到桌面/本应用
+const val MACRO_STARTUP_DELAY_MS = 4000L
+const val ACTION_RUN_MACRO = "com.ltx.action.RUN_MACRO"
+const val ACTION_STOP_MACRO = "com.ltx.action.STOP_MACRO"
+const val EXTRA_MACRO_PLAN_JSON = "macro_plan_json"
 
 // 悬浮框配色调色板（一套完整的按钮/面板颜色）
 data class FloatingPalette(
@@ -142,10 +150,36 @@ const val KEY_TB_SOUND = "tbSound"
 const val KEY_TB_VIBRATE = "tbVibrate"
 // 自定义常用后退秒数（逗号分隔，如 "101,151"）
 const val KEY_TB_CUSTOM_SECONDS = "tbCustomSeconds"
+
 const val DEFAULT_TB_AUTO_BACK = false
 const val DEFAULT_TB_BACK_TIME = 15
 const val DEFAULT_TB_SOUND = true
 const val DEFAULT_TB_VIBRATE = false
+
+// 任务方案执行时的提示配置（菜单“任务提示”控制）
+const val KEY_MACRO_TEXT_HINT = "macroTextHint"        // 每步文本提示
+const val KEY_MACRO_STEP_SOUND = "macroStepSound"      // 每步结束音效
+const val KEY_MACRO_TASK_SOUND = "macroTaskSound"      // 任务结束音效
+const val KEY_MACRO_VIBRATE = "macroVibrate"           // 任务结束震动
+const val DEFAULT_MACRO_TEXT_HINT = true
+const val DEFAULT_MACRO_STEP_SOUND = false
+const val DEFAULT_MACRO_TASK_SOUND = true
+const val DEFAULT_MACRO_VIBRATE = true
+// 任务方案：启动/每步/完成时 的震动与音效开关（分阶段）
+const val KEY_MACRO_VIBRATE_START = "macroVibrateStart"
+const val KEY_MACRO_VIBRATE_STEP = "macroVibrateStep"
+const val KEY_MACRO_VIBRATE_STEP_DONE = "macroVibrateStepDone"
+const val KEY_MACRO_VIBRATE_DONE = "macroVibrateDone"
+const val KEY_MACRO_STEP_SOUND_START = "macroStepSoundStart"
+const val KEY_MACRO_STEP_SOUND_STEP = "macroStepSoundStep"
+const val KEY_MACRO_STEP_SOUND_DONE = "macroStepSoundDone"
+const val DEFAULT_MACRO_VIBRATE_START = false
+const val DEFAULT_MACRO_VIBRATE_STEP = false
+const val DEFAULT_MACRO_VIBRATE_STEP_DONE = false
+const val DEFAULT_MACRO_VIBRATE_DONE = false
+const val DEFAULT_MACRO_STEP_SOUND_START = false
+const val DEFAULT_MACRO_STEP_SOUND_STEP = false
+const val DEFAULT_MACRO_STEP_SOUND_DONE = false
 
 /* 滑动配置数据类 */
 data class SlideConfig(
@@ -157,7 +191,16 @@ data class SlideConfig(
     val tbAutoBack: Boolean = DEFAULT_TB_AUTO_BACK,
     val tbBackTime: Int = DEFAULT_TB_BACK_TIME,
     val tbSound: Boolean = DEFAULT_TB_SOUND,
-    val tbVibrate: Boolean = DEFAULT_TB_VIBRATE
+    val tbVibrate: Boolean = DEFAULT_TB_VIBRATE,
+    val macroTextHint: Boolean = DEFAULT_MACRO_TEXT_HINT,
+    val macroTaskSound: Boolean = DEFAULT_MACRO_TASK_SOUND,
+    val macroVibrateStart: Boolean = DEFAULT_MACRO_VIBRATE_START,
+    val macroVibrateStep: Boolean = DEFAULT_MACRO_VIBRATE_STEP,
+    val macroVibrateStepDone: Boolean = DEFAULT_MACRO_VIBRATE_STEP_DONE,
+    val macroVibrateDone: Boolean = DEFAULT_MACRO_VIBRATE_DONE,
+    val macroStepSoundStart: Boolean = DEFAULT_MACRO_STEP_SOUND_START,
+    val macroStepSoundStep: Boolean = DEFAULT_MACRO_STEP_SOUND_STEP,
+    val macroStepSoundDone: Boolean = DEFAULT_MACRO_STEP_SOUND_DONE
 )
 
 // 滑动方向
@@ -167,6 +210,11 @@ const val DIRECTION_LEFT = "left"
 const val DIRECTION_RIGHT = "right"
 // 上下组合滑动（交替向上、向下）
 const val DIRECTION_UP_DOWN = "updown"
+
+// 任务方案“滑动”步骤的停顿模式（借鉴偏好设置的“停顿时间”三种模式）
+const val MACRO_PAUSE_NONE = "none"
+const val MACRO_PAUSE_FIXED = "fixed"
+const val MACRO_PAUSE_RANDOM = "random"
 
 // 自定义轨迹
 const val KEY_CUSTOM_TRAJECTORY_UP = "customTrajectory_up"

@@ -240,6 +240,9 @@ class FloatingWindowService : Service() {
                     }
                     is SlideEvent.CustomTrajectoryCleared -> updateDirectionButtonIndicators()
                     is SlideEvent.FloatingTransparencyChanged -> updatePanelTransparency(event.transparency)
+                    is SlideEvent.MacroStarted -> { /* 任务方案开始：悬浮窗已可用于停止 */ }
+                    is SlideEvent.MacroStep -> { /* 单步执行（点击文字）无需额外 UI */ }
+                    is SlideEvent.MacroStopped -> { /* 任务方案结束 */ }
                 }
             }
         }
@@ -413,10 +416,12 @@ class FloatingWindowService : Service() {
             FloatingButtonType.SETTING -> btn.setOnClickListener {
                 returnToMainActivity()
                 AutoSlideService.getInstance()?.stopSlide()
+                AutoSlideService.getInstance()?.stopMacro()
                 stopSelf()
             }
             FloatingButtonType.CLOSE -> btn.setOnClickListener {
                 AutoSlideService.getInstance()?.stopSlide()
+                AutoSlideService.getInstance()?.stopMacro()
                 stopSelf()
             }
             else -> {

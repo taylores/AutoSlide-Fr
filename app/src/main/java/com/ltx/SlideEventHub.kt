@@ -29,4 +29,8 @@ sealed class SlideEvent {
      * @param transparency 底板透明度数值
      */
     data class FloatingTransparencyChanged(val transparency: Int) : SlideEvent()
+    /* 任务方案开始/结束/单步事件 */
+    data class MacroStarted(val name: String) : SlideEvent()
+    object MacroStopped : SlideEvent()
+    data class MacroStep(val text: String) : SlideEvent()
 }

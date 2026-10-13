@@ -19,4 +19,37 @@
     <!--“自动后退”参数分组色块底色与描边-->
     <color name="tb_group_bg">#242530</color>
     <color name="tb_group_stroke">#34343E</color>
+
+    <!-- ===== 操作按钮语义配色（深色）：主色提亮，淡底用 20% 透明度 ===== -->
+    <color name="btn_green_fill">#43A047</color>
+    <color name="btn_green">#81C784</color>
+    <color name="btn_green_bg">#3381C784</color>
+    <color name="btn_teal">#4DD0E1</color>
+    <color name="btn_teal_bg">#334DD0E1</color>
+    <color name="btn_blue">#64B5F6</color>
+    <color name="btn_blue_bg">#3364B5F6</color>
+    <color name="btn_purple">#CE93D8</color>
+    <color name="btn_purple_bg">#33CE93D8</color>
+    <color name="btn_orange">#FFB74D</color>
+    <color name="btn_orange_bg">#33FFB74D</color>
+    <color name="btn_indigo">#B39DDB</color>
+    <color name="btn_indigo_bg">#33B39DDB</color>
+    <color name="btn_slate">#B0BEC5</color>
+    <color name="btn_slate_bg">#33B0BEC5</color>
+    <color name="btn_red">#EF9A9A</color>
+    <color name="btn_red_bg">#33EF9A9A</color>
+    <color name="btn_gray">#BDBDBD</color>
+    <color name="btn_gray_bg">#33BDBDBD</color>
+    <color name="btn_pick">#9FA8DA</color>
+    <color name="btn_pick_bg">#339FA8DA</color>
+
+    <!-- ===== 表单控件配色（深色） ===== -->
+    <color name="btn_indigo_fill">#9575CD</color>
+    <color name="form_field_fill">#1E1E24</color>
+    <color name="form_field_stroke">#3A3A46</color>
+    <color name="form_field_stroke_focus">#A5C3FF</color>
+    <color name="form_card_fill">#1A1A20</color>
+    <color name="form_card_stroke">#2E2E38</color>
+    <color name="form_arrow">#9A9AA6</color>
+    <color name="form_hint">#7C7C88</color>
 </resources>

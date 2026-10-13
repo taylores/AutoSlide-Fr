@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/margin_medium"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/title_macro_plans"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_size_subtitle"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/menuButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⋮"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textColor="@color/text_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="菜单" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/macro_no_plan"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone"
+        android:id="@+id/emptyHint" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/planList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="@dimen/margin_small"
+        android:nestedScrollingEnabled="true" />
+
+    <!-- 选中单个方案后出现的共用操作栏（未选中时隐藏） -->
+    <LinearLayout
+        android:id="@+id/planActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/planRun"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="6dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:textSize="14sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="15sp"
+            android:text="@string/macro_run"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/btn_green_fill"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/planDetail"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="6dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:textSize="14sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="15sp"
+            android:text="详情ⓘ"
+            android:textColor="@color/btn_teal"
+            app:backgroundTint="@color/btn_teal_bg"
+            app:strokeColor="@color/btn_teal"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/planEdit"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="6dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:textSize="14sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="15sp"
+            android:text="@string/edit"
+            android:textColor="@color/btn_blue"
+            app:backgroundTint="@color/btn_blue_bg"
+            app:strokeColor="@color/btn_blue"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/planCopy"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="6dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:textSize="14sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="15sp"
+            android:text="@string/macro_copy"
+            android:textColor="@color/btn_purple"
+            app:backgroundTint="@color/btn_purple_bg"
+            app:strokeColor="@color/btn_purple"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/planExport"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="6dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:textSize="14sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="15sp"
+            android:text="@string/macro_export"
+            android:textColor="@color/btn_orange"
+            app:backgroundTint="@color/btn_orange_bg"
+            app:strokeColor="@color/btn_orange"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/planDelete"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="6dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:textSize="14sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="15sp"
+            android:text="@string/delete"
+            android:textColor="@color/btn_red"
+            app:backgroundTint="@color/btn_red_bg"
+            app:strokeColor="@color/btn_red"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+    </LinearLayout>
+
+    <!-- 长按进入多选后出现的批量操作栏（未多选时隐藏） -->
+    <LinearLayout
+        android:id="@+id/planMultiBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/planSelCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/multiSelectAll"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="14dp"
+            android:text="@string/tb_select_all"
+            android:textSize="14sp"
+            android:textColor="@color/btn_slate"
+            app:backgroundTint="@color/btn_slate_bg"
+            app:strokeColor="@color/btn_slate"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/multiCopy"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="14dp"
+            android:text="@string/macro_copy"
+            android:textSize="14sp"
+            android:textColor="@color/btn_purple"
+            app:backgroundTint="@color/btn_purple_bg"
+            app:strokeColor="@color/btn_purple"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/multiDelete"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="14dp"
+            android:text="@string/delete"
+            android:textSize="14sp"
+            android:textColor="@color/btn_red"
+            app:backgroundTint="@color/btn_red_bg"
+            app:strokeColor="@color/btn_red"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/multiCancel"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:maxLines="1"
+            android:paddingHorizontal="14dp"
+            android:text="@string/cancel"
+            android:textSize="14sp"
+            android:textColor="@color/btn_gray"
+            app:backgroundTint="@color/btn_gray_bg"
+            app:strokeColor="@color/btn_gray"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp" />
+    </LinearLayout>
+
+    <!-- 页面底部“新建方案”按钮（从顶部右上角移到底部） -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/newPlanButton"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:text="@string/macro_new_plan"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/btn_indigo_fill"
+        app:cornerRadius="14dp" />
+
+    </LinearLayout>

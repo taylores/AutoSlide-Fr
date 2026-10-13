@@ -33,6 +33,24 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".MacroPlanActivity"
+            android:exported="false"
+            android:label="@string/title_macro_plans" />
+        <activity
+            android:name=".MacroEditorActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ScreenTextActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AutoSlide.Transparent"
+            android:label="@string/macro_inspect_text" />
+        <service
+            android:name=".service.InspectFloatingService"
+            android:enabled="true"
+            android:exported="false" />
+
         <service
             android:name=".service.AutoSlideService"
             android:enabled="true"
@@ -56,6 +74,17 @@
             android:name=".service.AutoSlideTileService"
             android:label="@string/tile_label"
             android:icon="@drawable/ic_slide_tile"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <!-- 屏幕文字检查磁贴 -->
+        <service
+            android:name=".service.InspectTextTileService"
+            android:label="@string/macro_inspect_text"
+            android:icon="@drawable/ic_floating_settings"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:exported="true">
             <intent-filter>

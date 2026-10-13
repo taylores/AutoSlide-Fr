@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 三行列表前面的对勾 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M3,5.5 L5,7.5 L9,3.5
+                         M3,11.5 L5,13.5 L9,9.5
+                         M3,17.5 L5,19.5 L9,15.5" />
+    <!-- 三条杆 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M10,6 L20,6
+                         M10,12 L20,12
+                         M10,18 L20,18" />
+</vector>

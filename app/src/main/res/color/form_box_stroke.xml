@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 输入框描边颜色：聚焦时用主题色，默认用浅灰 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/form_field_stroke_focus" android:state_focused="true" />
+    <item android:color="@color/form_field_stroke_focus" android:state_hovered="true" />
+    <item android:color="@color/form_field_stroke" />
+</selector>

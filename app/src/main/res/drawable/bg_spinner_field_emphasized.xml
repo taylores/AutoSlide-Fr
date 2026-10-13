@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 动作类型下拉框背景：主色描边以突出「主控件」地位 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/form_field_fill" />
+            <stroke android:width="1.5dp" android:color="@color/form_field_stroke_focus" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+    <item
+        android:width="22dp"
+        android:height="22dp"
+        android:gravity="right|center_vertical"
+        android:end="12dp"
+        android:drawable="@drawable/ic_arrow_drop_down" />
+</layer-list>

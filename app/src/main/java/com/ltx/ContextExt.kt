@@ -91,7 +91,16 @@ fun Context.getSlideConfig(): SlideConfig {
         tbAutoBack = prefs.getBoolean(KEY_TB_AUTO_BACK, DEFAULT_TB_AUTO_BACK),
         tbBackTime = prefs.getInt(KEY_TB_BACK_TIME, DEFAULT_TB_BACK_TIME).coerceAtLeast(1),
         tbSound = prefs.getBoolean(KEY_TB_SOUND, DEFAULT_TB_SOUND),
-        tbVibrate = prefs.getBoolean(KEY_TB_VIBRATE, DEFAULT_TB_VIBRATE)
+        tbVibrate = prefs.getBoolean(KEY_TB_VIBRATE, DEFAULT_TB_VIBRATE),
+        macroTextHint = prefs.getBoolean(KEY_MACRO_TEXT_HINT, DEFAULT_MACRO_TEXT_HINT),
+        macroTaskSound = prefs.getBoolean(KEY_MACRO_TASK_SOUND, DEFAULT_MACRO_TASK_SOUND),
+        macroVibrateStart = prefs.getBoolean(KEY_MACRO_VIBRATE_START, DEFAULT_MACRO_VIBRATE_START),
+        macroVibrateStep = prefs.getBoolean(KEY_MACRO_VIBRATE_STEP, DEFAULT_MACRO_VIBRATE_STEP),
+        macroVibrateStepDone = prefs.getBoolean(KEY_MACRO_VIBRATE_STEP_DONE, DEFAULT_MACRO_VIBRATE_STEP_DONE),
+        macroVibrateDone = prefs.getBoolean(KEY_MACRO_VIBRATE_DONE, DEFAULT_MACRO_VIBRATE_DONE),
+        macroStepSoundStart = prefs.getBoolean(KEY_MACRO_STEP_SOUND_START, DEFAULT_MACRO_STEP_SOUND_START),
+        macroStepSoundStep = prefs.getBoolean(KEY_MACRO_STEP_SOUND_STEP, DEFAULT_MACRO_STEP_SOUND_STEP),
+        macroStepSoundDone = prefs.getBoolean(KEY_MACRO_STEP_SOUND_DONE, DEFAULT_MACRO_STEP_SOUND_DONE)
     )
 }
 

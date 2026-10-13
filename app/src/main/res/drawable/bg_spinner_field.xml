@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 下拉框背景：圆角描边框 + 右侧箭头 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/bg_form_field" />
+    <item
+        android:width="22dp"
+        android:height="22dp"
+        android:gravity="right|center_vertical"
+        android:end="12dp"
+        android:drawable="@drawable/ic_arrow_drop_down" />
+</layer-list>

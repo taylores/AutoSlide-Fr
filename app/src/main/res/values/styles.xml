@@ -1,2 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources />
+<resources>
+
+    <!-- 表单输入框：圆角描边 + 浮动标签（Material3 OutlinedBox） -->
+    <style name="FormBox" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">1.5dp</item>
+        <item name="boxStrokeColor">@color/form_box_stroke</item>
+        <item name="boxBackgroundColor">@color/form_field_fill</item>
+        <!-- 未填写时框内提示文字：浅灰，明显弱于正式输入，避免被误认为已填内容 -->
+        <item name="android:textColorHint">@color/form_hint</item>
+        <item name="hintTextColor">@color/form_field_stroke_focus</item>
+    </style>
+
+    <!-- 表单下拉框：圆角描边框 + 右侧箭头；压低高度使其轻盈 -->
+    <style name="FormSpinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/bg_spinner_field</item>
+        <item name="android:popupBackground">@drawable/bg_form_popup</item>
+        <item name="android:dropDownVerticalOffset">4dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">34dp</item>
+        <item name="android:paddingTop">7dp</item>
+        <item name="android:paddingBottom">7dp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- 动作类型下拉框（页面主控件，略加强调） -->
+    <style name="FormSpinner.Emphasized" parent="FormSpinner">
+        <item name="android:background">@drawable/bg_spinner_field_emphasized</item>
+    </style>
+</resources>

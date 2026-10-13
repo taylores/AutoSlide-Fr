@@ -22,4 +22,54 @@
     <!--“自动后退”参数分组色块底色与描边-->
     <color name="tb_group_bg">#E7E9F4</color>
     <color name="tb_group_stroke">#D6D9E8</color>
+    <!--步骤项选中时的淡紫色高亮底色-->
+    <color name="step_selected">#E9E2F7</color>
+    <!--任务项/步骤项选中时的淡紫色高亮底色（统一）-->
+    <color name="item_selected">#E9E2F7</color>
+
+    <!-- ===== 操作按钮语义配色（浅色）=====
+         规则：主操作（运行/保存）用实底白字；其余操作用「同色 1dp 描边 + 12% 同色淡底 + 同色文字」，
+         颜色即语义，一眼可分辨动作性质。 -->
+    <!-- 绿：运行 / 保存（确认·主操作） -->
+    <color name="btn_green_fill">#2E7D32</color>
+    <color name="btn_green">#2E7D32</color>
+    <color name="btn_green_bg">#1F2E7D32</color>
+    <!-- 青：详情（查看信息，无副作用） -->
+    <color name="btn_teal">#00838F</color>
+    <color name="btn_teal_bg">#1F00838F</color>
+    <!-- 蓝：编辑（修改内容） -->
+    <color name="btn_blue">#1565C0</color>
+    <color name="btn_blue_bg">#1F1565C0</color>
+    <!-- 紫：复制（产生副本） -->
+    <color name="btn_purple">#6A1B9A</color>
+    <color name="btn_purple_bg">#1F6A1B9A</color>
+    <!-- 橙：导出（对外输出） -->
+    <color name="btn_orange">#E65100</color>
+    <color name="btn_orange_bg">#1FE65100</color>
+    <!-- 靛：添加 / 嵌入 / 复用（组装步骤） -->
+    <color name="btn_indigo">#4527A0</color>
+    <color name="btn_indigo_bg">#1F4527A0</color>
+    <!-- 青灰：排序（中性·位置调整） -->
+    <color name="btn_slate">#546E7A</color>
+    <color name="btn_slate_bg">#1F546E7A</color>
+    <!-- 红：删除（危险·不可逆） -->
+    <color name="btn_red">#C62828</color>
+    <color name="btn_red_bg">#1FC62828</color>
+    <!-- 灰：取消（弱化·退出） -->
+    <color name="btn_gray">#616161</color>
+    <color name="btn_gray_bg">#1F616161</color>
+    <!-- 蓝紫：拾取坐标（与坐标拾取界面按钮同色系） -->
+    <color name="btn_pick">#5C6BC0</color>
+    <color name="btn_pick_bg">#1F5C6BC0</color>
+
+    <!-- ===== 表单控件配色（浅色）：圆角描边输入框 / 下拉框 / 参数分组卡片 ===== -->
+    <color name="btn_indigo_fill">#7E57C2</color>
+    <color name="form_field_fill">#FFFFFFFF</color>
+    <color name="form_field_stroke">#C9CCE0</color>
+    <color name="form_field_stroke_focus">#545995</color>
+    <color name="form_card_fill">#F7F7FC</color>
+    <color name="form_card_stroke">#E3E5F0</color>
+    <color name="form_arrow">#8A8FA3</color>
+    <!-- 输入框未填写时的提示文字（明显浅于正式输入，避免误认为已填写内容） -->
+    <color name="form_hint">#B3B3BE</color>
 </resources>
