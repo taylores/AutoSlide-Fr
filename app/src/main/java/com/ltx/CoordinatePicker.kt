@@ -233,6 +233,11 @@ object CoordinatePicker {
         val resId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
         return if (resId > 0) context.resources.getDimensionPixelSize(resId) else 0
     }
+    
+    private fun navigationBarHeight(context: Context): Int {
+        val resId = context.resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resId > 0) context.resources.getDimensionPixelSize(resId) else 0
+    }
 
     private fun roundedBg(color: Int, radiusPx: Float): GradientDrawable =
         GradientDrawable().apply {
@@ -297,6 +302,15 @@ object CoordinatePicker {
         initXPct: Float,
         initYPct: Float
     ) : View(context) {
+        // 系统栏高度（真实屏幕坐标）：不同 ROM 上浮窗能否覆盖状态栏/导航栏不一致，
+        // 统一按「状态栏下沿 ~ 导航栏上沿」作为准心绘制范围与可选范围，保证各设备表现一致
+        private val statusBarH = statusBarHeight(context)
+        private val navBarH = navigationBarHeight(context)
+
+        // 可选纵坐标范围（真实屏幕坐标）
+        private val minY = statusBarH.toFloat()
+        private val maxY = (realH - navBarH).toFloat().coerceAtLeast(minY)
+
         private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.RED
             strokeWidth = 4f
@@ -309,11 +323,13 @@ object CoordinatePicker {
             textSize = 34f
             textAlign = Paint.Align.CENTER
         }
-        // 存为“真实屏幕坐标”
+        // 统一存为“真实屏幕坐标”（与 dispatchGesture 同一坐标系）
         private var cx = (initXPct / 100f * realW).coerceIn(0f, realW.toFloat())
-        private var cy = (initYPct / 100f * realH).coerceIn(0f, realH.toFloat())
+        private var cy = (initYPct / 100f * realH).coerceIn(minY, maxY)
 
-        // 浮窗是否铺满状态栏：若未铺满，视图坐标系比真实坐标少一个状态栏高度（仅影响顶部偏移）
+        // 视图左上角在“真实屏幕坐标”中的偏移，仅用于绘制时把真实坐标换算成视图坐标。
+        // 不能用「真实屏高 - 视图高度」推断：浮窗可能覆盖状态栏但不覆盖导航栏（如小米 mix2s），
+        // 那时缺口在底部，会被误判成顶部偏移，导致存下的 Y 多一个状态栏高度、实际点击偏下。
         private var viewTopOffset = 0
         private var offsetResolved = false
 
@@ -326,12 +342,13 @@ object CoordinatePicker {
             setPicking(false)
         }
 
+        /* 解析视图顶部在真实屏幕坐标中的偏移（用于绘制换算） */
         private fun resolveOffset() {
             if (offsetResolved) return
             offsetResolved = true
-            val sb = statusBarHeight(context)
-            val gap = realH - height
-            viewTopOffset = if (gap <= 4) 0 else sb
+            val loc = IntArray(2)
+            getLocationOnScreen(loc)
+            viewTopOffset = loc[1].coerceAtLeast(0)
         }
 
         fun setPicking(picking: Boolean) {
@@ -344,12 +361,15 @@ object CoordinatePicker {
             val activeColor = if (picking) Color.RED else Color.BLUE
             val viewX = cx
             val viewY = cy - viewTopOffset
+            // 竖线统一画在「状态栏下沿 ~ 导航栏上沿」之间（换算到视图坐标），不随设备能否覆盖系统栏而变化
+            val lineTop = (statusBarH - viewTopOffset).coerceIn(0, height).toFloat()
+            val lineBottom = (realH - navBarH - viewTopOffset).coerceIn(0, height).toFloat()
 
-            // 十字准心（贯穿全屏，颜色随状态）
+            // 十字准心（颜色随状态）
             linePaint.color = activeColor
             linePaint.alpha = 255
             canvas.drawLine(0f, viewY, realW.toFloat(), viewY, linePaint)
-            canvas.drawLine(viewX, 0f, viewX, realH.toFloat(), linePaint)
+            canvas.drawLine(viewX, lineTop, viewX, lineBottom, linePaint)
             canvas.drawLine(viewX - 12f, viewY, viewX + 12f, viewY, linePaint)
             canvas.drawLine(viewX, viewY - 12f, viewX, viewY + 12f, linePaint)
 
@@ -358,23 +378,53 @@ object CoordinatePicker {
             dotPaint.alpha = 70
             canvas.drawCircle(viewX, viewY, 34f, dotPaint)
 
-            // 坐标文字：白色描边 + 蓝/红填充
+            // 坐标文字：白色描边 + 蓝/红填充；位置随拾取点自适应，避免贴近屏幕边缘被遮挡
+            // - 默认：中心点上方居中
+            // - 靠近上沿：改到中心点下方（左上角→右下方、右上角→左下方）
+            // - 靠近下沿：保持上方，但按左右位置对齐（左下角→右上方、右下角→左上方）
             val label = "X: %.1f%%  Y: %.1f%%".format(xPct, yPct)
+            val textW = textPaint.measureText(label)
+            val fm = textPaint.fontMetrics
+            val textH = fm.bottom - fm.top
+            val margin = 8f
+            // 垂直：上方放不下（靠近顶部）时改到中心点下方
+            val textTop = if (viewY - 46f - textH < margin) viewY + 46f else viewY - 46f - textH
+            val textBaseY = textTop - fm.top
+            // 水平：靠近左沿左对齐（文字向右展开）、靠近右沿右对齐（文字向左展开），否则居中
+            val align = when {
+                viewX - textW / 2f < margin -> Paint.Align.LEFT
+                viewX + textW / 2f > width - margin -> Paint.Align.RIGHT
+                else -> Paint.Align.CENTER
+            }
+            textPaint.textAlign = align
+            val textX = when (align) {
+                Paint.Align.LEFT -> viewX + 12f
+                Paint.Align.RIGHT -> viewX - 12f
+                else -> viewX
+            }
             textPaint.style = Paint.Style.STROKE
             textPaint.strokeWidth = 5f
             textPaint.color = Color.WHITE
-            canvas.drawText(label, viewX, viewY - 46f, textPaint)
+            canvas.drawText(label, textX, textBaseY, textPaint)
             textPaint.style = Paint.Style.FILL
             textPaint.color = activeColor
-            canvas.drawText(label, viewX, viewY - 46f, textPaint)
+            canvas.drawText(label, textX, textBaseY, textPaint)
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
-            resolveOffset()
             when (event.action) {
-                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                    cx = event.x.coerceIn(0f, realW.toFloat())
-                    cy = (event.y + viewTopOffset).coerceIn(0f, realH.toFloat())
+                MotionEvent.ACTION_DOWN -> {
+                    // 用首个触点自校验「真实坐标 ↔ 视图坐标」偏移（rawY - y），比任何启发式都可靠
+                    viewTopOffset = (event.rawY - event.y).toInt().coerceAtLeast(0)
+                    offsetResolved = true
+                    cx = event.rawX.coerceIn(0f, realW.toFloat())
+                    cy = event.rawY.coerceIn(minY, maxY)
+                    invalidate()
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    // rawX/rawY 本身就是真实屏幕坐标，与浮窗是否覆盖状态栏/导航栏无关
+                    cx = event.rawX.coerceIn(0f, realW.toFloat())
+                    cy = event.rawY.coerceIn(minY, maxY)
                     invalidate()
                 }
             }
